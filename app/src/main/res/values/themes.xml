@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tema principal de la aplicación -->
+    <style name="Theme.StudyPlanner" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- Tema de la Splash Screen -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- Fondo general de toda la pantalla -->
+        <item name="windowSplashScreenBackground">#12140E</item>
+
+        <!-- ELIMINAMOS windowSplashScreenIconBackgroundColor para quitar el círculo visible -->
+
+        <!-- Tu logo (asegúrate de que el PNG sea transparente) -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/logo</item>
+
+        <!-- Tema al que debe cambiar la app después de iniciar -->
+        <item name="postSplashScreenTheme">@style/Theme.StudyPlanner</item>
+    </style>
+</resources>
