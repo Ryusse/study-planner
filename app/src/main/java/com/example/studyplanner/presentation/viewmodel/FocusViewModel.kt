@@ -68,6 +68,7 @@ class FocusViewModel(private val useCases: FocusSessionUseCases) : ViewModel() {
 	}
 
 	fun startSession(taskId: Int) {
+		if (_uiState.value.currentSession != null) return
 		viewModelScope.launch {
 			val session = FocusSession(taskId = taskId, cyclesCompleted = 0)
 			try {
