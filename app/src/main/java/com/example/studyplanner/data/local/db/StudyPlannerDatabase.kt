@@ -21,7 +21,8 @@ import com.example.studyplanner.data.local.entity.TaskEntity
 		FocusSessionEntity::class,
 		AchievementEntity::class
 	],
-	version = 1
+	version = 1,
+	exportSchema = false
 )
 abstract class StudyPlannerDatabase : RoomDatabase() {
 	abstract fun professorDao(): ProfessorDao

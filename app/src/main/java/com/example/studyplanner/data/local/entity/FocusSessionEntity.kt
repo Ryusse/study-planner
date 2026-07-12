@@ -2,6 +2,7 @@ package com.example.studyplanner.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
@@ -13,7 +14,8 @@ import androidx.room.PrimaryKey
 			childColumns = ["taskId"],
 			onDelete = ForeignKey.CASCADE
 		)
-	]
+	],
+	indices = [Index("taskId")]
 )
 data class FocusSessionEntity(
 	@PrimaryKey(autoGenerate = true) val id: Int = 0,
