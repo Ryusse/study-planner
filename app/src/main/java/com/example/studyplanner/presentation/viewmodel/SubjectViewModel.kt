@@ -36,10 +36,29 @@ class SubjectViewModel(private val useCases: SubjectUseCases) : ViewModel() {
 	fun addSubject(subject: Subject) {
 		viewModelScope.launch {
 			try {
+				_uiState.update { it.copy(loadingMessage = "Guardando materia") }
 				useCases.add(subject)
+				hideAddDialog()
 				_event.send(SubjectUiEvent.ShowSnackbar("Materia agregada"))
 			} catch (e: Exception) {
 				_event.send(SubjectUiEvent.ShowSnackbar("Error: ${e.message}"))
+			} finally {
+				_uiState.update { it.copy(loadingMessage = null) }
+			}
+		}
+	}
+
+	fun updateSubject(subject: Subject) {
+		viewModelScope.launch {
+			try {
+				_uiState.update { it.copy(loadingMessage = "Actualizando materia") }
+				useCases.update(subject)
+				hideAddDialog()
+				_event.send(SubjectUiEvent.ShowSnackbar("Materia actualizada"))
+			} catch (e: Exception) {
+				_event.send(SubjectUiEvent.ShowSnackbar("Error: ${e.message}"))
+			} finally {
+				_uiState.update { it.copy(loadingMessage = null) }
 			}
 		}
 	}
@@ -47,11 +66,30 @@ class SubjectViewModel(private val useCases: SubjectUseCases) : ViewModel() {
 	fun deleteSubject(subject: Subject) {
 		viewModelScope.launch {
 			try {
+				_uiState.update { it.copy(loadingMessage = "Eliminando materia") }
 				useCases.delete(subject)
 				_event.send(SubjectUiEvent.ShowSnackbar("Materia eliminada"))
 			} catch (e: Exception) {
-				_event.send(SubjectUiEvent.ShowSnackbar("Error: ${e.message}"))
+				_event.send(SubjectUiEvent.ShowSnackbar("Error al eliminar: ${e.message}"))
+			} finally {
+				_uiState.update { it.copy(loadingMessage = null) }
 			}
 		}
+	}
+
+	fun selectSubject(subject: Subject) {
+		_uiState.update { it.copy(selectedSubject = subject) }
+	}
+
+	fun clearSelection() {
+		_uiState.update { it.copy(selectedSubject = null) }
+	}
+
+	fun showAddDialog() {
+		_uiState.update { it.copy(showAddDialog = true) }
+	}
+
+	fun hideAddDialog() {
+		_uiState.update { it.copy(showAddDialog = false, selectedSubject = null) }
 	}
 }
