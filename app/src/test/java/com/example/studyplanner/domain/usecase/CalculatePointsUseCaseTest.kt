@@ -2,29 +2,26 @@ package com.example.studyplanner.domain.usecase
 
 import com.example.studyplanner.domain.model.FocusSession
 import com.example.studyplanner.domain.repository.FocusSessionRepository
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
-import org.junit.Assert.assertEquals
-import org.mockito.Mock
-import org.mockito.MockitoAnnotations
-import org.mockito.Mockito.`when`
 
 class CalculatePointsUseCaseTest {
-	@Mock
-	private lateinit var repository: FocusSessionRepository
+	private val repository: FocusSessionRepository = mockk()
 	private lateinit var useCase: CalculatePointsUseCase
 
 	@Before
 	fun setUp() {
-		MockitoAnnotations.openMocks(this)
 		useCase = CalculatePointsUseCase(repository)
 	}
 
 	@Test
 	fun invoke_emptyList_returnsZero() = runTest {
-		`when`(repository.getValidatedSessions()).thenReturn(flowOf(emptyList()))
+		every { repository.getValidatedSessions() } returns flowOf(emptyList())
 
 		useCase().collect { points ->
 			assertEquals(0, points)
@@ -37,7 +34,7 @@ class CalculatePointsUseCaseTest {
 		val sessions = listOf(
 			FocusSession(id = 1, taskId = 1, isValidated = true, validatedAt = now)
 		)
-		`when`(repository.getValidatedSessions()).thenReturn(flowOf(sessions))
+		every { repository.getValidatedSessions() } returns flowOf(sessions)
 
 		useCase().collect { points ->
 			assertEquals(15, points)
