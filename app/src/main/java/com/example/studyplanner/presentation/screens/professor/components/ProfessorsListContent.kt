@@ -20,8 +20,13 @@ fun ProfessorsListContent(
 	LazyColumn(
 		modifier = Modifier
 			.fillMaxSize()
-			.padding(paddingValues)
-			.padding(16.dp),
+			.padding(paddingValues),
+		contentPadding = androidx.compose.foundation.layout.PaddingValues(
+			start = 16.dp,
+			top = 8.dp,
+			end = 16.dp,
+			bottom = 88.dp
+		),
 		verticalArrangement = Arrangement.spacedBy(8.dp)
 	) {
 		items(professors) { professor ->

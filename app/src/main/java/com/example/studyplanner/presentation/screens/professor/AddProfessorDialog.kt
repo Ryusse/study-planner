@@ -40,7 +40,7 @@ private fun isValidEmail(email: String): Boolean {
 fun AddProfessorDialog(
 	viewModel: ProfessorViewModel,
 	onDismiss: () -> Unit,
-	sheetState: SheetState = rememberModalBottomSheetState()
+	sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 ) {
 	val state by viewModel.uiState.collectAsState()
 	var name by remember(state.selectedProfessor) {
@@ -98,7 +98,7 @@ fun AddProfessorDialog(
 			modifier = Modifier
 				.fillMaxWidth()
 				.padding(16.dp)
-				.padding(bottom = 16.dp)
+				.padding(bottom = 32.dp)
 				.imePadding()
 				.verticalScroll(rememberScrollState()),
 			verticalArrangement = Arrangement.spacedBy(16.dp)

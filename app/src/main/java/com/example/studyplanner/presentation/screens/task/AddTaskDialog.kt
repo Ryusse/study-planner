@@ -51,7 +51,7 @@ fun AddTaskDialog(
 	editingTask: Task?,
 	onDismiss: () -> Unit,
 	onSave: (Task) -> Unit,
-	sheetState: SheetState = rememberModalBottomSheetState()
+	sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 ) {
 	val isEditing = editingTask != null
 	val title = if (isEditing) "Editar Tarea" else "Agregar Tarea"
@@ -98,7 +98,7 @@ fun AddTaskDialog(
 			modifier = Modifier
 				.fillMaxWidth()
 				.padding(16.dp)
-				.padding(bottom = 16.dp)
+				.padding(bottom = 32.dp)
 				.imePadding()
 				.verticalScroll(rememberScrollState()),
 			verticalArrangement = Arrangement.spacedBy(16.dp)

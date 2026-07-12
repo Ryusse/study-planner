@@ -9,9 +9,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -49,7 +48,9 @@ fun SubjectListScreen(
 	val professorState by professorViewModel.uiState.collectAsState()
 	val taskState by taskViewModel.uiState.collectAsState()
 	val snackbarHostState = remember { SnackbarHostState() }
-	val sheetState = rememberModalBottomSheetState()
+	
+	// skipPartiallyExpanded = true asegura que abra completo (height fit)
+	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 	var subjectToDelete by remember { mutableStateOf<Subject?>(null) }
 
 	LaunchedEffect(Unit) {
@@ -64,50 +65,53 @@ fun SubjectListScreen(
 		return professorState.professors.find { it.id == professorId }?.name ?: "Sin profesor"
 	}
 
-	Scaffold(
-		modifier = modifier,
-		floatingActionButton = {
-			FloatingActionButton(
-				onClick = {
-					viewModel.clearSelection()
-					viewModel.showAddDialog()
-				}
+	Box(modifier = modifier.fillMaxSize()) {
+		if (state.subjects.isEmpty()) {
+			Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+				Text("No hay materias registradas")
+			}
+		} else {
+			LazyColumn(
+				modifier = Modifier.fillMaxSize(),
+				contentPadding = androidx.compose.foundation.layout.PaddingValues(
+					start = 16.dp,
+					top = 8.dp,
+					end = 16.dp,
+					bottom = 88.dp
+				),
+				verticalArrangement = Arrangement.spacedBy(8.dp)
 			) {
-				Icon(Icons.Default.Add, "Agregar materia")
+				items(state.subjects, key = { it.id }) { subject ->
+					SubjectCard(
+						subject = subject,
+						professorName = professorNameFor(subject.professorId),
+						pendingTaskCount = taskState.tasks.count { it.subjectId == subject.id && !it.isCompleted },
+						onEdit = {
+							viewModel.selectSubject(subject)
+							viewModel.showAddDialog()
+						},
+						onDelete = { subjectToDelete = subject }
+					)
+				}
 			}
 		}
-	) { paddingValues ->
-		Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-			if (state.subjects.isEmpty()) {
-				Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-					Text("No hay materias")
-				}
-			} else {
-				LazyColumn(
-					modifier = Modifier.fillMaxSize(),
-					contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
-					verticalArrangement = Arrangement.spacedBy(8.dp)
-				) {
-					items(state.subjects, key = { it.id }) { subject ->
-						SubjectCard(
-							subject = subject,
-							professorName = professorNameFor(subject.professorId),
-							pendingTaskCount = taskState.tasks.count { it.subjectId == subject.id && !it.isCompleted },
-							onEdit = {
-								viewModel.selectSubject(subject)
-								viewModel.showAddDialog()
-							},
-							onDelete = { subjectToDelete = subject }
-						)
-					}
-				}
-			}
 
-			SnackbarHost(
-				modifier = Modifier.align(Alignment.BottomCenter),
-				hostState = snackbarHostState
-			)
-		}
+		ExtendedFloatingActionButton(
+			onClick = {
+				viewModel.clearSelection()
+				viewModel.showAddDialog()
+			},
+			modifier = Modifier
+				.align(Alignment.BottomEnd)
+				.padding(16.dp),
+			icon = { Icon(Icons.Default.Add, null) },
+			text = { Text("Agregar materia") }
+		)
+
+		SnackbarHost(
+			modifier = Modifier.align(Alignment.BottomCenter),
+			hostState = snackbarHostState
+		)
 	}
 
 	if (state.showAddDialog) {

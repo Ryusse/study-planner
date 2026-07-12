@@ -28,42 +28,37 @@ fun ProfessorCard(
 	onDelete: () -> Unit
 ) {
 	Card(modifier = Modifier.fillMaxWidth()) {
-		Column(
+		Row(
 			modifier = Modifier
 				.fillMaxWidth()
 				.padding(16.dp),
-			verticalArrangement = Arrangement.spacedBy(8.dp)
+			horizontalArrangement = Arrangement.SpaceBetween,
+			verticalAlignment = Alignment.CenterVertically
 		) {
-			Row(
-				modifier = Modifier.fillMaxWidth(),
-				horizontalArrangement = Arrangement.SpaceBetween,
-				verticalAlignment = Alignment.CenterVertically
-			) {
-				Column(modifier = Modifier.weight(1f)) {
-					Text(
-						professor.name,
-						fontSize = 16.sp,
-						fontWeight = FontWeight.Bold
-					)
-					Text(
-						professor.email,
-						fontSize = 12.sp,
-						color = Color.Gray
-					)
-					Text(
-						professor.department,
-						fontSize = 12.sp,
-						color = Color.Gray
-					)
-				}
+			Column(modifier = Modifier.weight(1f)) {
+				Text(
+					professor.name,
+					fontSize = 16.sp,
+					fontWeight = FontWeight.Bold
+				)
+				Text(
+					professor.email,
+					fontSize = 12.sp,
+					color = Color.Gray
+				)
+				Text(
+					professor.department,
+					fontSize = 12.sp,
+					color = Color.Gray
+				)
+			}
 
-				Row {
-					IconButton(onClick = onEdit) {
-						Icon(Icons.Default.Edit, "Editar")
-					}
-					IconButton(onClick = onDelete) {
-						Icon(Icons.Default.Delete, "Eliminar")
-					}
+			Row {
+				IconButton(onClick = onEdit) {
+					Icon(Icons.Default.Edit, "Editar")
+				}
+				IconButton(onClick = onDelete) {
+					Icon(Icons.Default.Delete, "Eliminar")
 				}
 			}
 		}

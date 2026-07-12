@@ -10,9 +10,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -49,7 +48,7 @@ fun TaskListScreen(
 	val state by viewModel.uiState.collectAsState()
 	val subjectState by subjectViewModel.uiState.collectAsState()
 	val snackbarHostState = remember { SnackbarHostState() }
-	val sheetState = rememberModalBottomSheetState()
+	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 	var taskToDelete by remember { mutableStateOf<Task?>(null) }
 
 	LaunchedEffect(Unit) {
@@ -65,21 +64,8 @@ fun TaskListScreen(
 		return subject?.let { "${it.code} - ${it.name}" } ?: "Materia eliminada"
 	}
 
-	Scaffold(
-		modifier = modifier,
-		floatingActionButton = {
-			FloatingActionButton(
-				onClick = {
-					viewModel.clearSelection()
-					viewModel.showAddDialog()
-				}
-			) {
-				Icon(Icons.Default.Add, "Agregar tarea")
-			}
-		}
-	) { paddingValues ->
-		Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-		Column {
+	Box(modifier = modifier.fillMaxSize()) {
+		Column(modifier = Modifier.fillMaxSize()) {
 			TaskFilterBar(
 				subjects = subjectState.subjects,
 				filterSubjectId = state.filterSubjectId,
@@ -100,7 +86,12 @@ fun TaskListScreen(
 			} else {
 				LazyColumn(
 					modifier = Modifier.fillMaxSize(),
-					contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+					contentPadding = androidx.compose.foundation.layout.PaddingValues(
+						start = 16.dp, 
+						top = 8.dp, 
+						end = 16.dp, 
+						bottom = 88.dp // Espacio para el FAB
+					),
 					verticalArrangement = Arrangement.spacedBy(8.dp)
 				) {
 					items(state.filteredTasks, key = { it.id }) { task ->
@@ -120,11 +111,22 @@ fun TaskListScreen(
 			}
 		}
 
+		ExtendedFloatingActionButton(
+			onClick = {
+				viewModel.clearSelection()
+				viewModel.showAddDialog()
+			},
+			modifier = Modifier
+				.align(Alignment.BottomEnd)
+				.padding(16.dp),
+			icon = { Icon(Icons.Default.Add, null) },
+			text = { Text("Agregar tarea") }
+		)
+
 		SnackbarHost(
 			modifier = Modifier.align(Alignment.BottomCenter),
 			hostState = snackbarHostState
 		)
-		}
 	}
 
 	if (state.showAddDialog) {

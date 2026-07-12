@@ -40,9 +40,9 @@ fun ProfessorListScreen(
 ) {
 	val state by viewModel.uiState.collectAsState()
 	val snackbarHostState = remember { SnackbarHostState() }
-	val sheetState = rememberModalBottomSheetState()
+	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 	var professorToDelete by remember { mutableStateOf<Professor?>(null) }
-
+	
 	LaunchedEffect(Unit) {
 		viewModel.event.collect { event ->
 			when (event) {
@@ -50,7 +50,7 @@ fun ProfessorListScreen(
 			}
 		}
 	}
-
+	
 	Box(modifier = modifier.fillMaxSize()) {
 		if (state.professors.isEmpty()) {
 			EmptyProfessorsList(androidx.compose.foundation.layout.PaddingValues(0.dp))
@@ -65,7 +65,7 @@ fun ProfessorListScreen(
 				onDeleteClick = { professor -> professorToDelete = professor }
 			)
 		}
-
+		
 		ExtendedFloatingActionButton(
 			modifier = Modifier
 				.align(Alignment.BottomEnd)
@@ -77,18 +77,18 @@ fun ProfessorListScreen(
 			icon = { Icon(Icons.Filled.Edit, "Agregar docente") },
 			text = { Text(text = "Agregar docente") },
 		)
-
+		
 		SnackbarHost(
 			modifier = Modifier.align(Alignment.BottomCenter),
 			hostState = snackbarHostState
 		)
 	}
-
+	
 	LoadingDialog(
 		isVisible = state.loadingMessage != null,
 		message = state.loadingMessage ?: ""
 	)
-
+	
 	if (professorToDelete != null) {
 		DeleteConfirmationDialog(
 			professorName = professorToDelete!!.name,
@@ -99,7 +99,7 @@ fun ProfessorListScreen(
 			onDismiss = { professorToDelete = null }
 		)
 	}
-
+	
 	if (state.showAddDialog) {
 		AddProfessorDialog(
 			viewModel = viewModel,

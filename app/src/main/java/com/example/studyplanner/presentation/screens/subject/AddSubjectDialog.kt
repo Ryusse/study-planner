@@ -50,25 +50,30 @@ fun AddSubjectDialog(
 	editingSubject: Subject?,
 	onDismiss: () -> Unit,
 	onSave: (Subject) -> Unit,
-	sheetState: SheetState = rememberModalBottomSheetState()
+	sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 ) {
 	val isEditing = editingSubject != null
 	val title = if (isEditing) "Editar Materia" else "Agregar Materia"
-
+	
 	var code by remember(editingSubject) { mutableStateOf(editingSubject?.code ?: "") }
 	var name by remember(editingSubject) { mutableStateOf(editingSubject?.name ?: "") }
 	var schedule by remember(editingSubject) { mutableStateOf(editingSubject?.schedule ?: "") }
-	var selectedColor by remember(editingSubject) { mutableStateOf(editingSubject?.color ?: SUBJECT_COLORS.first()) }
-	var selectedProfessor by remember(editingSubject) {
-		mutableStateOf(professors.find { it.id == editingSubject?.professorId } ?: professors.firstOrNull())
+	var selectedColor by remember(editingSubject) {
+		mutableStateOf(
+			editingSubject?.color ?: SUBJECT_COLORS.first()
+		)
 	}
-
+	var selectedProfessor by remember(editingSubject) {
+		mutableStateOf(professors.find { it.id == editingSubject?.professorId }
+			?: professors.firstOrNull())
+	}
+	
 	var codeError by remember(editingSubject) { mutableStateOf<String?>(null) }
 	var nameError by remember(editingSubject) { mutableStateOf<String?>(null) }
 	var scheduleError by remember(editingSubject) { mutableStateOf<String?>(null) }
 	var professorError by remember(editingSubject) { mutableStateOf<String?>(null) }
 	var professorMenuExpanded by remember { mutableStateOf(false) }
-
+	
 	val validateForm = {
 		codeError = if (code.isBlank()) "Código requerido" else null
 		nameError = if (name.isBlank()) "Nombre requerido" else null
@@ -76,7 +81,7 @@ fun AddSubjectDialog(
 		professorError = if (selectedProfessor == null) "Selecciona un profesor" else null
 		codeError == null && nameError == null && scheduleError == null && professorError == null
 	}
-
+	
 	ModalBottomSheet(
 		onDismissRequest = onDismiss,
 		sheetState = sheetState,
@@ -86,13 +91,13 @@ fun AddSubjectDialog(
 			modifier = Modifier
 				.fillMaxWidth()
 				.padding(16.dp)
-				.padding(bottom = 16.dp)
+				.padding(bottom = 32.dp)
 				.imePadding()
 				.verticalScroll(rememberScrollState()),
 			verticalArrangement = Arrangement.spacedBy(16.dp)
 		) {
 			Text(title, style = MaterialTheme.typography.headlineSmall)
-
+			
 			Column {
 				OutlinedTextField(
 					value = code,
@@ -103,10 +108,15 @@ fun AddSubjectDialog(
 					isError = codeError != null
 				)
 				if (codeError != null) {
-					Text(codeError!!, color = Color.Red, fontSize = 12.sp, modifier = Modifier.padding(start = 16.dp, top = 4.dp))
+					Text(
+						codeError!!,
+						color = Color.Red,
+						fontSize = 12.sp,
+						modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+					)
 				}
 			}
-
+			
 			Column {
 				OutlinedTextField(
 					value = name,
@@ -117,10 +127,15 @@ fun AddSubjectDialog(
 					isError = nameError != null
 				)
 				if (nameError != null) {
-					Text(nameError!!, color = Color.Red, fontSize = 12.sp, modifier = Modifier.padding(start = 16.dp, top = 4.dp))
+					Text(
+						nameError!!,
+						color = Color.Red,
+						fontSize = 12.sp,
+						modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+					)
 				}
 			}
-
+			
 			Column {
 				ExposedDropdownMenuBox(
 					expanded = professorMenuExpanded,
@@ -154,10 +169,15 @@ fun AddSubjectDialog(
 					}
 				}
 				if (professorError != null) {
-					Text(professorError!!, color = Color.Red, fontSize = 12.sp, modifier = Modifier.padding(start = 16.dp, top = 4.dp))
+					Text(
+						professorError!!,
+						color = Color.Red,
+						fontSize = 12.sp,
+						modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+					)
 				}
 			}
-
+			
 			Column {
 				OutlinedTextField(
 					value = schedule,
@@ -168,10 +188,15 @@ fun AddSubjectDialog(
 					isError = scheduleError != null
 				)
 				if (scheduleError != null) {
-					Text(scheduleError!!, color = Color.Red, fontSize = 12.sp, modifier = Modifier.padding(start = 16.dp, top = 4.dp))
+					Text(
+						scheduleError!!,
+						color = Color.Red,
+						fontSize = 12.sp,
+						modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+					)
 				}
 			}
-
+			
 			Column {
 				Text("Color", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
 				Row(
@@ -195,7 +220,7 @@ fun AddSubjectDialog(
 					}
 				}
 			}
-
+			
 			Row(
 				modifier = Modifier
 					.fillMaxWidth()
