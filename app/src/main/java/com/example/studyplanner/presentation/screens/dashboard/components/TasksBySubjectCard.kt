@@ -21,16 +21,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.studyplanner.core.navigation.NavRoutes
+import com.example.studyplanner.domain.model.Subject
 import com.example.studyplanner.domain.model.Task
 
 @Composable
 fun TasksBySubjectCard(
-	tasks: List<Task>,
+	pendingBySubject: Map<Subject, List<Task>>,
 	navController: NavHostController
 ) {
-	val pendingTasks = tasks.filter { !it.isCompleted }
-	val tasksBySubject = pendingTasks.groupBy { it.subjectId }
-
 	Card(
 		modifier = Modifier.fillMaxWidth(),
 		colors = CardDefaults.cardColors(
@@ -50,7 +48,7 @@ fun TasksBySubjectCard(
 				modifier = Modifier.padding(bottom = 8.dp)
 			)
 
-			if (tasksBySubject.isEmpty()) {
+			if (pendingBySubject.isEmpty()) {
 				Text(
 					"No hay tareas pendientes",
 					fontSize = 14.sp,
@@ -58,18 +56,16 @@ fun TasksBySubjectCard(
 					modifier = Modifier.padding(vertical = 16.dp)
 				)
 			} else {
-				tasksBySubject.forEach { (_, tasksForSubject) ->
+				pendingBySubject.forEach { (subject, tasks) ->
 					SubjectTaskRow(
-						subjectName = "Materia ${tasksForSubject.first().subjectId}",
-						pendingCount = tasksForSubject.size
+						subjectName = "${subject.code} - ${subject.name}",
+						pendingCount = tasks.size
 					)
 				}
 			}
 
 			Button(
-				onClick = {
-					navController.navigate(NavRoutes.TASK_LIST)
-				},
+				onClick = { navController.navigate(NavRoutes.TASK_LIST) },
 				modifier = Modifier
 					.fillMaxWidth()
 					.padding(top = 8.dp)
