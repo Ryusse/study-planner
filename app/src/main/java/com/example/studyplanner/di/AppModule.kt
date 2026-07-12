@@ -14,6 +14,7 @@ import com.example.studyplanner.domain.repository.ProfessorRepository
 import com.example.studyplanner.domain.repository.SubjectRepository
 import com.example.studyplanner.domain.repository.TaskRepository
 import com.example.studyplanner.domain.usecase.*
+import com.example.studyplanner.presentation.viewmodel.DashboardViewModel
 import com.example.studyplanner.presentation.viewmodel.ProfessorViewModel
 import com.example.studyplanner.presentation.viewmodel.TaskViewModel
 import com.example.studyplanner.presentation.viewmodel.FocusViewModel
@@ -76,6 +77,7 @@ object AppModule {
             getAll = GetAllSubjectsUseCase(repository),
             getByProfessor = GetSubjectsByProfessorUseCase(repository),
             add = AddSubjectUseCase(repository),
+            update = UpdateSubjectUseCase(repository),
             delete = DeleteSubjectUseCase(repository)
         )
     }
@@ -84,10 +86,21 @@ object AppModule {
         val repository = provideTaskRepository(context)
         return TaskUseCases(
             create = CreateTaskUseCase(repository),
+            update = UpdateTaskUseCase(repository),
             delete = DeleteTaskUseCase(repository),
             getAll = GetAllTasksUseCase(repository),
             getPending = GetPendingTasksUseCase(repository),
-            getUrgent = GetUrgentTasksUseCase(repository)
+            getUrgent = GetUrgentTasksUseCase(repository),
+            markComplete = MarkTaskCompleteUseCase(repository)
+        )
+    }
+
+    fun provideDashboardUseCases(context: Context): DashboardUseCases {
+        val taskRepository = provideTaskRepository(context)
+        val subjectRepository = provideSubjectRepository(context)
+        return DashboardUseCases(
+            getStats = GetTaskStatsUseCase(taskRepository),
+            getPendingBySubject = GetPendingTasksBySubjectUseCase(taskRepository, subjectRepository)
         )
     }
 
@@ -133,5 +146,10 @@ object AppModule {
     fun provideSubjectViewModel(context: Context): SubjectViewModel {
         val useCases = provideSubjectUseCases(context)
         return SubjectViewModel(useCases)
+    }
+
+    fun provideDashboardViewModel(context: Context): DashboardViewModel {
+        val useCases = provideDashboardUseCases(context)
+        return DashboardViewModel(useCases)
     }
 }
