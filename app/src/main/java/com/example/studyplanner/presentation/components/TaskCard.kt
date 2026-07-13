@@ -75,7 +75,7 @@ fun TaskCard(
 					actions = listOfNotNull(
 						if (!task.isCompleted) CardAction("Iniciar enfoque", Icons.Default.Timer, onClick = onStartFocus) else null,
 						CardAction("Editar", Icons.Default.Edit, onClick = onEdit),
-						CardAction("Eliminar", Icons.Default.Delete, tint = MaterialTheme.colorScheme.error, onClick = onDelete)
+						CardAction("Eliminar", Icons.Default.Delete, onClick = onDelete)
 					)
 				)
 			}

@@ -9,7 +9,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -57,7 +56,7 @@ fun ProfessorCard(
 			CardActionsMenu(
 				actions = listOf(
 					CardAction("Editar", Icons.Default.Edit, onClick = onEdit),
-					CardAction("Eliminar", Icons.Default.Delete, tint = MaterialTheme.colorScheme.error, onClick = onDelete)
+					CardAction("Eliminar", Icons.Default.Delete, onClick = onDelete)
 				)
 			)
 		}

@@ -71,7 +71,7 @@ fun SubjectCard(
 			CardActionsMenu(
 				actions = listOf(
 					CardAction("Editar", Icons.Default.Edit, onClick = onEdit),
-					CardAction("Eliminar", Icons.Default.Delete, tint = MaterialTheme.colorScheme.error, onClick = onDelete)
+					CardAction("Eliminar", Icons.Default.Delete, onClick = onDelete)
 				)
 			)
 		}

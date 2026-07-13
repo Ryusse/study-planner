@@ -10,6 +10,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -26,7 +27,6 @@ import androidx.compose.ui.unit.dp
 data class CardAction(
 	val label: String,
 	val icon: ImageVector,
-	val tint: Color? = null,
 	val onClick: () -> Unit
 )
 
@@ -49,8 +49,8 @@ fun CardActionsMenu(actions: List<CardAction>) {
 			Column(modifier = Modifier.padding(bottom = 32.dp)) {
 				actions.forEach { action ->
 					ListItem(
-						headlineContent = { Text(action.label, color = action.tint ?: Color.Unspecified) },
-						leadingContent = { Icon(action.icon, null, tint = action.tint ?: Color.Unspecified) },
+						headlineContent = { Text(action.label) },
+						leadingContent = { Icon(action.icon, null, tint = LocalContentColor.current) },
 						modifier = Modifier
 							.fillMaxWidth()
 							.clickable {
