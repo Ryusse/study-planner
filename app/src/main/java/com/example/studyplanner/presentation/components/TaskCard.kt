@@ -11,8 +11,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -73,19 +71,13 @@ fun TaskCard(
 					Text("${task.priority} · ${task.type}", fontSize = 12.sp)
 				}
 
-				Row {
-					if (!task.isCompleted) {
-						IconButton(onClick = onStartFocus) {
-							Icon(Icons.Default.Timer, "Iniciar enfoque")
-						}
-					}
-					IconButton(onClick = onEdit) {
-						Icon(Icons.Default.Edit, "Editar")
-					}
-					IconButton(onClick = onDelete) {
-						Icon(Icons.Default.Delete, "Eliminar")
-					}
-				}
+				CardActionsMenu(
+					actions = listOfNotNull(
+						if (!task.isCompleted) CardAction("Iniciar enfoque", Icons.Default.Timer, onClick = onStartFocus) else null,
+						CardAction("Editar", Icons.Default.Edit, onClick = onEdit),
+						CardAction("Eliminar", Icons.Default.Delete, tint = MaterialTheme.colorScheme.error, onClick = onDelete)
+					)
+				)
 			}
 		}
 	}

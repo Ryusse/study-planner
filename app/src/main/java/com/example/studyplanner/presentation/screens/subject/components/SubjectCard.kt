@@ -13,8 +13,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,6 +24,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.studyplanner.domain.model.Subject
+import com.example.studyplanner.presentation.components.CardAction
+import com.example.studyplanner.presentation.components.CardActionsMenu
 
 @Composable
 fun SubjectCard(
@@ -68,14 +68,12 @@ fun SubjectCard(
 				color = MaterialTheme.colorScheme.primary
 			)
 
-			Row {
-				IconButton(onClick = onEdit) {
-					Icon(Icons.Default.Edit, "Editar")
-				}
-				IconButton(onClick = onDelete) {
-					Icon(Icons.Default.Delete, "Eliminar")
-				}
-			}
+			CardActionsMenu(
+				actions = listOf(
+					CardAction("Editar", Icons.Default.Edit, onClick = onEdit),
+					CardAction("Eliminar", Icons.Default.Delete, tint = MaterialTheme.colorScheme.error, onClick = onDelete)
+				)
+			)
 		}
 	}
 }
