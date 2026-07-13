@@ -73,8 +73,8 @@ class FocusViewModel(private val useCases: FocusSessionUseCases) : ViewModel() {
 			val session = FocusSession(taskId = taskId, cyclesCompleted = 0)
 			try {
 				useCases.create(session)
-				_uiState.update { it.copy(currentSession = session) }
-				startTimer(session)
+				_uiState.update { it.copy(currentSession = session, timerRunning = true) }
+				runCountdown(cyclesCompleted = 0, isWorkPhase = true, timeRemaining = WORK_DURATION)
 				_event.send(FocusUiEvent.ShowSnackbar("Sesión iniciada"))
 			} catch (e: Exception) {
 				_event.send(FocusUiEvent.ShowSnackbar("Error: ${e.message}"))
@@ -82,30 +82,30 @@ class FocusViewModel(private val useCases: FocusSessionUseCases) : ViewModel() {
 		}
 	}
 
-	private fun startTimer(session: FocusSession) {
+	// ponytail: un solo loop de cuenta regresiva, tanto para arrancar como para reanudar
+	private fun runCountdown(cyclesCompleted: Int, isWorkPhase: Boolean, timeRemaining: Long) {
 		timerJob?.cancel()
 		timerJob = viewModelScope.launch(Dispatchers.Default) {
-			var timeRemaining = WORK_DURATION
-			var cyclesCompleted = session.cyclesCompleted
+			var cycles = cyclesCompleted
+			var workPhase = isWorkPhase
+			var remaining = timeRemaining
 
-			while (cyclesCompleted < 4) {
-				val isWorkPhase = (cyclesCompleted % 2) == 0
-				val phaseDuration = if (isWorkPhase) WORK_DURATION else BREAK_DURATION
-
-				timeRemaining = phaseDuration
-				while (timeRemaining > 0) {
+			while (cycles < 4) {
+				while (remaining > 0) {
 					_uiState.update { state ->
 						state.copy(
-							timerMs = timeRemaining,
-							currentCycle = cyclesCompleted + 1,
-							isWorkPhase = isWorkPhase,
+							timerMs = remaining,
+							currentCycle = cycles + 1,
+							isWorkPhase = workPhase,
 							isLongBreak = false
 						)
 					}
 					delay(1000)
-					timeRemaining -= 1000
+					remaining -= 1000
 				}
-				cyclesCompleted++
+				cycles++
+				workPhase = (cycles % 2) == 0
+				remaining = if (workPhase) WORK_DURATION else BREAK_DURATION
 			}
 
 			_uiState.update { it.copy(timerMs = LONG_BREAK_DURATION) }
@@ -121,8 +121,13 @@ class FocusViewModel(private val useCases: FocusSessionUseCases) : ViewModel() {
 	}
 
 	fun resumeTimer(session: FocusSession) {
+		val state = _uiState.value
 		_uiState.update { it.copy(timerRunning = true) }
-		startTimer(session)
+		runCountdown(
+			cyclesCompleted = state.currentCycle - 1,
+			isWorkPhase = state.isWorkPhase,
+			timeRemaining = if (state.timerMs > 0) state.timerMs else WORK_DURATION
+		)
 	}
 
 	fun validateSession(session: FocusSession, isValid: Boolean) {

@@ -69,22 +69,24 @@ fun PomodoroTimerUI(
 			modifier = Modifier,
 			horizontalArrangement = Arrangement.SpaceEvenly
 		) {
-			IconButton(
-				onClick = onPause,
-				modifier = Modifier
-					.size(56.dp)
-					.background(MaterialTheme.colorScheme.surfaceContainerLow, shape = CircleShape)
-			) {
-				Icon(Icons.Default.Pause, "Pausar")
-			}
-
-			IconButton(
-				onClick = onResume,
-				modifier = Modifier
-					.size(56.dp)
-					.background(MaterialTheme.colorScheme.primary, shape = CircleShape)
-			) {
-				Icon(Icons.Default.PlayArrow, "Reanudar", tint = MaterialTheme.colorScheme.onPrimary)
+			if (state.timerRunning) {
+				IconButton(
+					onClick = onPause,
+					modifier = Modifier
+						.size(56.dp)
+						.background(MaterialTheme.colorScheme.primary, shape = CircleShape)
+				) {
+					Icon(Icons.Default.Pause, "Pausar", tint = MaterialTheme.colorScheme.onPrimary)
+				}
+			} else {
+				IconButton(
+					onClick = onResume,
+					modifier = Modifier
+						.size(56.dp)
+						.background(MaterialTheme.colorScheme.primary, shape = CircleShape)
+				) {
+					Icon(Icons.Default.PlayArrow, "Reanudar", tint = MaterialTheme.colorScheme.onPrimary)
+				}
 			}
 
 			IconButton(
