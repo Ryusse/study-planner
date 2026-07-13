@@ -46,6 +46,8 @@ class FocusViewModel(private val useCases: FocusSessionUseCases) : ViewModel() {
 	private fun loadActiveSession() {
 		viewModelScope.launch {
 			useCases.getActiveSession().collect { session ->
+				// la sesion pudo borrarse por cascada (ej. se elimino su materia), el timer en memoria queda huerfano si no se cancela
+				if (session == null) timerJob?.cancel()
 				_uiState.update { it.copy(currentSession = session) }
 			}
 		}
