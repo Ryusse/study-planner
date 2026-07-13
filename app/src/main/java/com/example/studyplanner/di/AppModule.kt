@@ -45,6 +45,25 @@ object AppModule {
             db.execSQL("INSERT INTO subjects (id, code, name, professorId, schedule, color) VALUES (5, 'DDJ-501', 'Diseño y Desarrollo de Juegos Interactivos I', 5, 'Viernes 18:00-20:00', '#42A5F5')")
             db.execSQL("INSERT INTO subjects (id, code, name, professorId, schedule, color) VALUES (6, 'RCD-601', 'Redes y Comunicación de Datos 2', 6, 'Sábado 08:00-11:00', '#26A69A')")
             db.execSQL("INSERT INTO subjects (id, code, name, professorId, schedule, color) VALUES (7, 'ENG-701', 'English for Business', 7, 'Sábado 11:00-13:00', '#66BB6A')")
+
+            val now = System.currentTimeMillis()
+            val day = 24L * 60 * 60 * 1000
+            fun task(id: Int, subjectId: Int, title: String, deadlineOffsetDays: Long, priority: String, type: String, estimatedTime: Int, isCompleted: Boolean = false) {
+                val deadline = now + deadlineOffsetDays * day
+                val completedAt = if (isCompleted) "${now - day}" else "NULL"
+                db.execSQL(
+                    "INSERT INTO tasks (id, subjectId, title, deadline, priority, type, estimatedTime, isCompleted, completedAt, createdAt) " +
+                        "VALUES ($id, $subjectId, '$title', $deadline, '$priority', '$type', $estimatedTime, ${if (isCompleted) 1 else 0}, $completedAt, $now)"
+                )
+            }
+            task(1, 1, "Práctica calificada 1", 3, "Alta", "Examen", 90)
+            task(2, 2, "Entregable auditoría ONPE", 7, "Media", "Proyecto", 120)
+            task(3, 3, "Terminar PC02 StudyPlanner", 5, "Alta", "Proyecto", 180)
+            task(4, 4, "Avance RSL", 10, "Media", "Tarea", 60)
+            task(5, 5, "Borrador GDD", 14, "Baja", "Tarea", 45)
+            task(6, 6, "Laboratorio VLAN", -2, "Media", "Tarea", 60, isCompleted = true)
+            task(7, 7, "Presentación técnica", 6, "Alta", "Proyecto", 90)
+            task(8, 1, "Revisión CMMI", 9, "Baja", "Tarea", 30)
         }
     }
 
