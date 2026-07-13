@@ -76,8 +76,9 @@ fun AppNavigation(
 				val bottomBarRoute = navController.currentBackStackEntryAsState()
 					.value?.destination?.route
 				navigationItems.forEach { item ->
+					val isFocusTabWithTask = item.route == NavRoutes.FOCUS && bottomBarRoute == NavRoutes.FOCUS_WITH_TASK
 					NavigationBarItem(
-						selected = bottomBarRoute == item.route,
+						selected = bottomBarRoute == item.route || isFocusTabWithTask,
 						onClick = {
 							navController.navigate(item.route) {
 								popUpTo(NavRoutes.DASHBOARD) { saveState = true }
