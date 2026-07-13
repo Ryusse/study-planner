@@ -128,7 +128,6 @@ fun SubjectListScreen(
 
 	if (subjectToDelete != null) {
 		DeleteConfirmDialog(
-			isVisible = true,
 			title = "Eliminar materia",
 			text = "¿Estás seguro de que deseas eliminar ${subjectToDelete?.name}?",
 			onConfirm = {

@@ -50,7 +50,7 @@ fun TaskListScreen(
 	val snackbarHostState = remember { SnackbarHostState() }
 	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 	var taskToDelete by remember { mutableStateOf<Task?>(null) }
-
+	
 	LaunchedEffect(Unit) {
 		viewModel.event.collect { event ->
 			when (event) {
@@ -58,12 +58,12 @@ fun TaskListScreen(
 			}
 		}
 	}
-
+	
 	fun subjectNameFor(subjectId: Int): String {
 		val subject = subjectState.subjects.find { it.id == subjectId }
 		return subject?.let { "${it.code} - ${it.name}" } ?: "Materia eliminada"
 	}
-
+	
 	Box(modifier = modifier.fillMaxSize()) {
 		Column(modifier = Modifier.fillMaxSize()) {
 			TaskFilterBar(
@@ -75,7 +75,7 @@ fun TaskListScreen(
 				onPrioritySelected = viewModel::setFilterPriority,
 				onStatusSelected = viewModel::setFilterStatus
 			)
-
+			
 			if (state.filteredTasks.isEmpty()) {
 				Box(
 					modifier = Modifier.fillMaxSize(),
@@ -87,9 +87,9 @@ fun TaskListScreen(
 				LazyColumn(
 					modifier = Modifier.fillMaxSize(),
 					contentPadding = androidx.compose.foundation.layout.PaddingValues(
-						start = 16.dp, 
-						top = 8.dp, 
-						end = 16.dp, 
+						start = 16.dp,
+						top = 8.dp,
+						end = 16.dp,
 						bottom = 88.dp // Espacio para el FAB
 					),
 					verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -110,7 +110,7 @@ fun TaskListScreen(
 				}
 			}
 		}
-
+		
 		ExtendedFloatingActionButton(
 			onClick = {
 				viewModel.clearSelection()
@@ -122,13 +122,13 @@ fun TaskListScreen(
 			icon = { Icon(Icons.Default.Add, null) },
 			text = { Text("Agregar tarea") }
 		)
-
+		
 		SnackbarHost(
 			modifier = Modifier.align(Alignment.BottomCenter),
 			hostState = snackbarHostState
 		)
 	}
-
+	
 	if (state.showAddDialog) {
 		AddTaskDialog(
 			subjects = subjectState.subjects,
@@ -140,10 +140,9 @@ fun TaskListScreen(
 			sheetState = sheetState
 		)
 	}
-
+	
 	if (taskToDelete != null) {
 		DeleteConfirmDialog(
-			isVisible = true,
 			title = "Eliminar tarea",
 			text = "¿Estás seguro de que deseas eliminar \"${taskToDelete?.title}\"?",
 			onConfirm = {
@@ -153,7 +152,7 @@ fun TaskListScreen(
 			onDismiss = { taskToDelete = null }
 		)
 	}
-
+	
 	LoadingDialog(
 		isVisible = state.loadingMessage != null,
 		message = state.loadingMessage ?: ""

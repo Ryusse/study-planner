@@ -24,8 +24,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.studyplanner.domain.model.Professor
+import com.example.studyplanner.presentation.components.DeleteConfirmDialog
 import com.example.studyplanner.presentation.components.LoadingDialog
-import com.example.studyplanner.presentation.screens.professor.components.DeleteConfirmationDialog
 import com.example.studyplanner.presentation.screens.professor.components.EmptyProfessorsList
 import com.example.studyplanner.presentation.screens.professor.components.ProfessorsListContent
 import com.example.studyplanner.presentation.state.ProfessorUiEvent
@@ -90,8 +90,9 @@ fun ProfessorListScreen(
 	)
 	
 	if (professorToDelete != null) {
-		DeleteConfirmationDialog(
-			professorName = professorToDelete!!.name,
+		DeleteConfirmDialog(
+			title = "Eliminar profesor",
+			text = "¿Estás seguro de que deseas eliminar a ${professorToDelete?.name}?",
 			onConfirm = {
 				viewModel.deleteProfessor(professorToDelete!!)
 				professorToDelete = null

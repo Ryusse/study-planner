@@ -10,7 +10,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,12 +39,7 @@ fun TaskCard(
 	onDelete: () -> Unit = {},
 	onStartFocus: () -> Unit = {}
 ) {
-	Card(
-		modifier = modifier.fillMaxWidth(),
-		colors = CardDefaults.cardColors(
-			containerColor = MaterialTheme.colorScheme.surfaceContainer
-		)
-	) {
+	Card(modifier = modifier.fillMaxWidth()) {
 		Column(modifier = Modifier.padding(16.dp)) {
 			Row(verticalAlignment = Alignment.CenterVertically) {
 				Checkbox(
