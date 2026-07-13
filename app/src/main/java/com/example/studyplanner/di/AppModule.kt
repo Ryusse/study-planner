@@ -2,6 +2,8 @@ package com.example.studyplanner.di
 
 import android.content.Context
 import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.studyplanner.data.local.db.StudyPlannerDatabase
 import com.example.studyplanner.data.repository.AchievementRepositoryImpl
 import com.example.studyplanner.data.repository.FocusSessionRepositoryImpl
@@ -24,13 +26,37 @@ object AppModule {
     @Volatile
     private var INSTANCE: StudyPlannerDatabase? = null
 
+    // ponytail: data de ejemplo, se inserta solo una vez cuando Room crea la BD por primera vez
+    private val SEED_CALLBACK = object : RoomDatabase.Callback() {
+        override fun onCreate(db: SupportSQLiteDatabase) {
+            super.onCreate(db)
+            db.execSQL("INSERT INTO professors (id, name, email, department) VALUES (1, 'Prof. Carlos Ramírez', 'carlos.ramirez@utp.edu.pe', 'Desarrollo de Software 2')")
+            db.execSQL("INSERT INTO professors (id, name, email, department) VALUES (2, 'Prof. Lucía Fernández', 'lucia.fernandez@utp.edu.pe', 'Calidad de Software')")
+            db.execSQL("INSERT INTO professors (id, name, email, department) VALUES (3, 'Prof. Jorge Salazar', 'jorge.salazar@utp.edu.pe', 'Desarrollo Móvil')")
+            db.execSQL("INSERT INTO professors (id, name, email, department) VALUES (4, 'Prof. Patricia Gómez', 'patricia.gomez@utp.edu.pe', 'Formación para la Investigación')")
+            db.execSQL("INSERT INTO professors (id, name, email, department) VALUES (5, 'Prof. Diego Torres', 'diego.torres@utp.edu.pe', 'Diseño de Videojuegos')")
+            db.execSQL("INSERT INTO professors (id, name, email, department) VALUES (6, 'Prof. Andrea Quispe', 'andrea.quispe@utp.edu.pe', 'Redes y Comunicaciones')")
+            db.execSQL("INSERT INTO professors (id, name, email, department) VALUES (7, 'Prof. Michael Johnson', 'michael.johnson@utp.edu.pe', 'English for Business')")
+
+            db.execSQL("INSERT INTO subjects (id, code, name, professorId, schedule, color) VALUES (1, 'DS2-101', 'Desarrollo de Software 2', 1, 'Lunes 18:00-21:00', '#EF5350')")
+            db.execSQL("INSERT INTO subjects (id, code, name, professorId, schedule, color) VALUES (2, 'CS-201', 'Calidad de Software', 2, 'Martes 18:00-21:00', '#EC407A')")
+            db.execSQL("INSERT INTO subjects (id, code, name, professorId, schedule, color) VALUES (3, 'DM-301', 'Desarrollo Móvil', 3, 'Miércoles 19:00-21:00', '#AB47BC')")
+            db.execSQL("INSERT INTO subjects (id, code, name, professorId, schedule, color) VALUES (4, 'FIS-401', 'Formación para la Investigación de Sistemas', 4, 'Jueves 18:00-20:00', '#5C6BC0')")
+            db.execSQL("INSERT INTO subjects (id, code, name, professorId, schedule, color) VALUES (5, 'DDJ-501', 'Diseño y Desarrollo de Juegos Interactivos I', 5, 'Viernes 18:00-20:00', '#42A5F5')")
+            db.execSQL("INSERT INTO subjects (id, code, name, professorId, schedule, color) VALUES (6, 'RCD-601', 'Redes y Comunicación de Datos 2', 6, 'Sábado 08:00-11:00', '#26A69A')")
+            db.execSQL("INSERT INTO subjects (id, code, name, professorId, schedule, color) VALUES (7, 'ENG-701', 'English for Business', 7, 'Sábado 11:00-13:00', '#66BB6A')")
+        }
+    }
+
     private fun getDatabase(context: Context): StudyPlannerDatabase {
         return INSTANCE ?: synchronized(this) {
             val instance = Room.databaseBuilder(
                    context.applicationContext,
                 StudyPlannerDatabase::class.java,
                 "study_planner_db"
-                    ).build()
+                    )
+                .addCallback(SEED_CALLBACK)
+                .build()
             INSTANCE = instance
             instance
         }
