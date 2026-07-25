@@ -26,7 +26,6 @@ object AppModule {
     @Volatile
     private var INSTANCE: StudyPlannerDatabase? = null
 
-    // ponytail: data de ejemplo, se inserta solo una vez cuando Room crea la BD por primera vez
     private val SEED_CALLBACK = object : RoomDatabase.Callback() {
         override fun onCreate(db: SupportSQLiteDatabase) {
             super.onCreate(db)
@@ -69,15 +68,14 @@ object AppModule {
 
     private fun getDatabase(context: Context): StudyPlannerDatabase {
         return INSTANCE ?: synchronized(this) {
-            val instance = Room.databaseBuilder(
-                   context.applicationContext,
+            INSTANCE ?: Room.databaseBuilder(
+                context.applicationContext,
                 StudyPlannerDatabase::class.java,
                 "study_planner_db"
-                    )
+            )
                 .addCallback(SEED_CALLBACK)
                 .build()
-            INSTANCE = instance
-            instance
+                .also { INSTANCE = it }
         }
     }
 
@@ -108,31 +106,34 @@ object AppModule {
 
     fun provideProfessorUseCases(context: Context): ProfessorUseCases {
         val repository = provideProfessorRepository(context)
+        val subjectRepository = provideSubjectRepository(context)
         return ProfessorUseCases(
             getAll = GetAllProfessorsUseCase(repository),
             add = AddProfessorUseCase(repository),
             update = UpdateProfessorUseCase(repository),
-            delete = DeleteProfessorUseCase(repository)
+            delete = DeleteProfessorUseCase(repository, subjectRepository)
         )
     }
 
     fun provideSubjectUseCases(context: Context): SubjectUseCases {
         val repository = provideSubjectRepository(context)
+        val taskRepository = provideTaskRepository(context)
         return SubjectUseCases(
             getAll = GetAllSubjectsUseCase(repository),
             getByProfessor = GetSubjectsByProfessorUseCase(repository),
             add = AddSubjectUseCase(repository),
             update = UpdateSubjectUseCase(repository),
-            delete = DeleteSubjectUseCase(repository)
+            delete = DeleteSubjectUseCase(repository, taskRepository)
         )
     }
 
     fun provideTaskUseCases(context: Context): TaskUseCases {
         val repository = provideTaskRepository(context)
+        val focusSessionRepository = provideFocusSessionRepository(context)
         return TaskUseCases(
             create = CreateTaskUseCase(repository),
             update = UpdateTaskUseCase(repository),
-            delete = DeleteTaskUseCase(repository),
+            delete = DeleteTaskUseCase(repository, focusSessionRepository),
             getAll = GetAllTasksUseCase(repository),
             getPending = GetPendingTasksUseCase(repository),
             getUrgent = GetUrgentTasksUseCase(repository),
@@ -157,6 +158,7 @@ object AppModule {
             getValidated = GetValidatedSessionsUseCase(focusRepository),
             create = CreateSessionUseCase(focusRepository),
             validate = ValidateSessionUseCase(focusRepository),
+            delete = DeleteSessionUseCase(focusRepository),
             getStreak = GetStreakUseCase(focusRepository),
             calculatePoints = CalculatePointsUseCase(focusRepository),
             getPendingCount = GetPendingTaskCountUseCase(taskRepository),
