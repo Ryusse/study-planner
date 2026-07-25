@@ -11,5 +11,6 @@ interface TaskRepository {
 	suspend fun getTaskById(id: Int): Task?
 	fun getTasksBySubject(subjectId: Int): Flow<List<Task>>
 	fun getPendingTasks(): Flow<List<Task>>
-	fun getThreeUrgentTasks(): Flow<List<Task>>
+	fun getUrgentTasks(limit: Int): Flow<List<Task>>
+	suspend fun countBySubject(subjectId: Int): Int
 }

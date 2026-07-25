@@ -31,6 +31,9 @@ interface TaskDao {
 	@Query("SELECT * FROM tasks WHERE isCompleted = 0 ORDER BY deadline ASC")
 	fun getPendingTasks(): Flow<List<TaskEntity>>
 
-	@Query("SELECT * FROM tasks WHERE isCompleted = 0 ORDER BY deadline ASC LIMIT 3")
-	fun getThreeUrgentTasks(): Flow<List<TaskEntity>>
+	@Query("SELECT * FROM tasks WHERE isCompleted = 0 ORDER BY deadline ASC LIMIT :limit")
+	fun getUrgentTasks(limit: Int): Flow<List<TaskEntity>>
+
+	@Query("SELECT COUNT(*) FROM tasks WHERE subjectId = :subjectId")
+	suspend fun countBySubject(subjectId: Int): Int
 }

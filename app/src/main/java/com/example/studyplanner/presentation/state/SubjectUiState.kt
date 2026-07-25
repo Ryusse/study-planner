@@ -4,7 +4,7 @@ import com.example.studyplanner.domain.model.Subject
 
 data class SubjectUiState(
 	val subjects: List<Subject> = emptyList(),
-	val isLoading: Boolean = false,
-	val error: String? = null,
-	val selectedSubject: Subject? = null
+	val loadingMessage: String? = null,
+	val selectedSubject: Subject? = null,
+	val showAddDialog: Boolean = false
 )

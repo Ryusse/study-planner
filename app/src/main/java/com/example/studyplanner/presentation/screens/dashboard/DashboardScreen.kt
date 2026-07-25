@@ -13,33 +13,37 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.studyplanner.presentation.screens.dashboard.components.PointsCard
+import com.example.studyplanner.presentation.screens.dashboard.components.StreakCard
 import com.example.studyplanner.presentation.screens.dashboard.components.TaskStatsCard
 import com.example.studyplanner.presentation.screens.dashboard.components.TasksBySubjectCard
-import com.example.studyplanner.presentation.viewmodel.TaskViewModel
+import com.example.studyplanner.presentation.viewmodel.DashboardViewModel
 
 @Composable
 fun DashboardScreen(
 	navController: NavHostController,
-	taskViewModel: TaskViewModel,
+	viewModel: DashboardViewModel,
 	modifier: Modifier = Modifier
 ) {
-	val taskState by taskViewModel.uiState.collectAsState()
-	
+	val state by viewModel.uiState.collectAsState()
+
 	Column(
 		modifier = modifier
 			.fillMaxWidth()
 			.fillMaxHeight()
-			.padding(16.dp)
+			.padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 16.dp)
 			.verticalScroll(rememberScrollState()),
 		verticalArrangement = Arrangement.spacedBy(16.dp)
 	) {
+		StreakCard(streak = state.streak)
+		PointsCard(points = state.points)
 		TaskStatsCard(
-			totalTasks = taskState.tasks.size,
-			completedTasks = taskState.tasks.count { it.isCompleted },
-			pendingTasks = taskState.pendingCount
+			totalTasks = state.stats.total,
+			completedTasks = state.stats.completed,
+			pendingTasks = state.stats.pending
 		)
 		TasksBySubjectCard(
-			tasks = taskState.tasks,
+			pendingBySubject = state.pendingBySubject,
 			navController = navController
 		)
 	}

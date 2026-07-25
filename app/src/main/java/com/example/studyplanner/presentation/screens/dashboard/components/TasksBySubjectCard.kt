@@ -21,16 +21,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.studyplanner.core.navigation.NavRoutes
-import com.example.studyplanner.domain.model.Task
+import com.example.studyplanner.domain.model.Subject
+import com.example.studyplanner.domain.model.SubjectProgress
 
 @Composable
 fun TasksBySubjectCard(
-	tasks: List<Task>,
+	pendingBySubject: Map<Subject, SubjectProgress>,
 	navController: NavHostController
 ) {
-	val pendingTasks = tasks.filter { !it.isCompleted }
-	val tasksBySubject = pendingTasks.groupBy { it.subjectId }
-
 	Card(
 		modifier = Modifier.fillMaxWidth(),
 		colors = CardDefaults.cardColors(
@@ -44,32 +42,30 @@ fun TasksBySubjectCard(
 			verticalArrangement = Arrangement.spacedBy(12.dp)
 		) {
 			Text(
-				"Tareas Pendientes por Materia",
+				"Progreso por Materia",
 				fontSize = 16.sp,
 				fontWeight = FontWeight.Bold,
 				modifier = Modifier.padding(bottom = 8.dp)
 			)
 
-			if (tasksBySubject.isEmpty()) {
+			if (pendingBySubject.isEmpty()) {
 				Text(
-					"No hay tareas pendientes",
+					"No hay tareas registradas",
 					fontSize = 14.sp,
 					color = MaterialTheme.colorScheme.onSurfaceVariant,
 					modifier = Modifier.padding(vertical = 16.dp)
 				)
 			} else {
-				tasksBySubject.forEach { (_, tasksForSubject) ->
+				pendingBySubject.forEach { (subject, progress) ->
 					SubjectTaskRow(
-						subjectName = "Materia ${tasksForSubject.first().subjectId}",
-						pendingCount = tasksForSubject.size
+						subjectName = "${subject.code} - ${subject.name}",
+						progress = progress
 					)
 				}
 			}
 
 			Button(
-				onClick = {
-					navController.navigate(NavRoutes.TASK_LIST)
-				},
+				onClick = { navController.navigate(NavRoutes.TASK_LIST) },
 				modifier = Modifier
 					.fillMaxWidth()
 					.padding(top = 8.dp)
@@ -83,7 +79,7 @@ fun TasksBySubjectCard(
 @Composable
 private fun SubjectTaskRow(
 	subjectName: String,
-	pendingCount: Int
+	progress: SubjectProgress
 ) {
 	Row(
 		modifier = Modifier
@@ -102,7 +98,7 @@ private fun SubjectTaskRow(
 			verticalAlignment = Alignment.CenterVertically
 		) {
 			Text(
-				"$pendingCount pendiente${if (pendingCount != 1) "s" else ""}",
+				"${progress.completed} completada${if (progress.completed != 1) "s" else ""} · ${progress.pending} pendiente${if (progress.pending != 1) "s" else ""}",
 				fontSize = 14.sp,
 				fontWeight = FontWeight.SemiBold,
 				color = MaterialTheme.colorScheme.primary

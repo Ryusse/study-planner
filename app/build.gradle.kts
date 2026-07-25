@@ -10,8 +10,8 @@ android {
 
 	defaultConfig {
 		applicationId = "com.example.studyplanner"
-		minSdk = 24
-		targetSdk = 35
+		minSdk = 30
+		targetSdk = 36
 		versionCode = 1
 		versionName = "1.0"
 
@@ -61,6 +61,8 @@ dependencies {
 	implementation(libs.kotlinx.coroutines.android)
 	implementation(libs.androidx.compose.material.icons.extended)
 	testImplementation(libs.junit)
+	testImplementation(libs.mockk)
+	testImplementation(libs.kotlinx.coroutines.test)
 	androidTestImplementation(libs.androidx.junit)
 	androidTestImplementation(libs.androidx.espresso.core)
 	androidTestImplementation(platform(libs.androidx.compose.bom))

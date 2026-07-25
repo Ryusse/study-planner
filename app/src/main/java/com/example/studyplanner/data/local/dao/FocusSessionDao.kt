@@ -36,4 +36,7 @@ interface FocusSessionDao {
 
 	@Query("SELECT * FROM focus_sessions WHERE isValidated = 0 ORDER BY startedAt DESC")
 	fun getActiveSessions(): Flow<List<FocusSessionEntity>>
+
+	@Query("SELECT COUNT(*) FROM focus_sessions WHERE taskId = :taskId AND isValidated = 0")
+	suspend fun countActiveByTask(taskId: Int): Int
 }

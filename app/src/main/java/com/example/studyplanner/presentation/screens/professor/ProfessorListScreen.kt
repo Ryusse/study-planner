@@ -24,8 +24,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.studyplanner.domain.model.Professor
+import com.example.studyplanner.presentation.components.DeleteConfirmDialog
 import com.example.studyplanner.presentation.components.LoadingDialog
-import com.example.studyplanner.presentation.screens.professor.components.DeleteConfirmationDialog
 import com.example.studyplanner.presentation.screens.professor.components.EmptyProfessorsList
 import com.example.studyplanner.presentation.screens.professor.components.ProfessorsListContent
 import com.example.studyplanner.presentation.state.ProfessorUiEvent
@@ -40,9 +40,9 @@ fun ProfessorListScreen(
 ) {
 	val state by viewModel.uiState.collectAsState()
 	val snackbarHostState = remember { SnackbarHostState() }
-	val sheetState = rememberModalBottomSheetState()
+	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 	var professorToDelete by remember { mutableStateOf<Professor?>(null) }
-
+	
 	LaunchedEffect(Unit) {
 		viewModel.event.collect { event ->
 			when (event) {
@@ -50,7 +50,7 @@ fun ProfessorListScreen(
 			}
 		}
 	}
-
+	
 	Box(modifier = modifier.fillMaxSize()) {
 		if (state.professors.isEmpty()) {
 			EmptyProfessorsList(androidx.compose.foundation.layout.PaddingValues(0.dp))
@@ -65,7 +65,7 @@ fun ProfessorListScreen(
 				onDeleteClick = { professor -> professorToDelete = professor }
 			)
 		}
-
+		
 		ExtendedFloatingActionButton(
 			modifier = Modifier
 				.align(Alignment.BottomEnd)
@@ -77,21 +77,22 @@ fun ProfessorListScreen(
 			icon = { Icon(Icons.Filled.Edit, "Agregar docente") },
 			text = { Text(text = "Agregar docente") },
 		)
-
+		
 		SnackbarHost(
 			modifier = Modifier.align(Alignment.BottomCenter),
 			hostState = snackbarHostState
 		)
 	}
-
+	
 	LoadingDialog(
 		isVisible = state.loadingMessage != null,
 		message = state.loadingMessage ?: ""
 	)
-
+	
 	if (professorToDelete != null) {
-		DeleteConfirmationDialog(
-			professorName = professorToDelete!!.name,
+		DeleteConfirmDialog(
+			title = "Eliminar profesor",
+			text = "¿Estás seguro de que deseas eliminar a ${professorToDelete?.name}?",
 			onConfirm = {
 				viewModel.deleteProfessor(professorToDelete!!)
 				professorToDelete = null
@@ -99,11 +100,14 @@ fun ProfessorListScreen(
 			onDismiss = { professorToDelete = null }
 		)
 	}
-
+	
 	if (state.showAddDialog) {
 		AddProfessorDialog(
-			viewModel = viewModel,
+			editingProfessor = state.selectedProfessor,
 			onDismiss = { viewModel.hideAddDialog() },
+			onSave = { professor ->
+				if (state.selectedProfessor != null) viewModel.updateProfessor(professor) else viewModel.addProfessor(professor)
+			},
 			sheetState = sheetState
 		)
 	}

@@ -2,6 +2,7 @@ package com.example.studyplanner.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
@@ -13,6 +14,11 @@ import androidx.room.PrimaryKey
 			childColumns = ["subjectId"],
 			onDelete = ForeignKey.CASCADE
 		)
+	],
+	indices = [
+		Index("subjectId"),
+		Index("deadline"),
+		Index("isCompleted")
 	]
 )
 data class TaskEntity(

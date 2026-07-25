@@ -3,6 +3,7 @@ package com.example.studyplanner.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.studyplanner.domain.model.FocusSession
+import com.example.studyplanner.domain.model.PomodoroPolicy
 import com.example.studyplanner.domain.usecase.FocusSessionUseCases
 import com.example.studyplanner.presentation.state.FocusUiEvent
 import com.example.studyplanner.presentation.state.FocusUiState
@@ -19,22 +20,37 @@ import kotlinx.coroutines.launch
 class FocusViewModel(private val useCases: FocusSessionUseCases) : ViewModel() {
 	private val _uiState = MutableStateFlow(FocusUiState())
 	val uiState: StateFlow<FocusUiState> = _uiState.asStateFlow()
-
+	
 	private val _event = Channel<FocusUiEvent>()
 	val event = _event.receiveAsFlow()
-
+	
 	private var timerJob: kotlinx.coroutines.Job? = null
-	private val WORK_DURATION = 25 * 60 * 1000L
-	private val BREAK_DURATION = 5 * 60 * 1000L
-	private val LONG_BREAK_DURATION = 15 * 60 * 1000L
 
+	private data class Phase(
+		val cycle: Int,
+		val isWork: Boolean,
+		val isLong: Boolean,
+		val duration: Long
+	)
+
+	private val phases = listOf(
+		Phase(1, isWork = true, isLong = false, duration = PomodoroPolicy.WORK_DURATION_MS),
+		Phase(1, isWork = false, isLong = false, duration = PomodoroPolicy.BREAK_DURATION_MS),
+		Phase(2, isWork = true, isLong = false, duration = PomodoroPolicy.WORK_DURATION_MS),
+		Phase(2, isWork = false, isLong = false, duration = PomodoroPolicy.BREAK_DURATION_MS),
+		Phase(3, isWork = true, isLong = false, duration = PomodoroPolicy.WORK_DURATION_MS),
+		Phase(3, isWork = false, isLong = false, duration = PomodoroPolicy.BREAK_DURATION_MS),
+		Phase(4, isWork = true, isLong = false, duration = PomodoroPolicy.WORK_DURATION_MS),
+		Phase(4, isWork = false, isLong = true, duration = PomodoroPolicy.LONG_BREAK_DURATION_MS)
+	)
+	
 	init {
 		loadSessions()
 		loadActiveSession()
 		loadStreak()
 		loadPoints()
 	}
-
+	
 	private fun loadSessions() {
 		viewModelScope.launch {
 			useCases.getValidated().collect { sessions ->
@@ -42,15 +58,15 @@ class FocusViewModel(private val useCases: FocusSessionUseCases) : ViewModel() {
 			}
 		}
 	}
-
+	
 	private fun loadActiveSession() {
 		viewModelScope.launch {
 			useCases.getActiveSession().collect { session ->
-				_uiState.update { it.copy(currentSession = session) }
+				if (session != null) useCases.delete(session)
 			}
 		}
 	}
-
+	
 	private fun loadStreak() {
 		viewModelScope.launch {
 			useCases.getStreak().collect { streak ->
@@ -58,7 +74,7 @@ class FocusViewModel(private val useCases: FocusSessionUseCases) : ViewModel() {
 			}
 		}
 	}
-
+	
 	private fun loadPoints() {
 		viewModelScope.launch {
 			useCases.calculatePoints().collect { points ->
@@ -66,51 +82,57 @@ class FocusViewModel(private val useCases: FocusSessionUseCases) : ViewModel() {
 			}
 		}
 	}
-
+	
 	fun startSession(taskId: Int) {
-		viewModelScope.launch {
-			val session = FocusSession(taskId = taskId, cyclesCompleted = 0)
-			try {
-				useCases.create(session)
-				_uiState.update { it.copy(currentSession = session) }
-				startTimer(session)
-				_event.send(FocusUiEvent.ShowSnackbar("Sesión iniciada"))
-			} catch (e: Exception) {
-				_event.send(FocusUiEvent.ShowSnackbar("Error: ${e.message}"))
-			}
-		}
+		if (_uiState.value.currentSession != null) return
+		val session = FocusSession(taskId = taskId, cyclesCompleted = 0)
+		_uiState.update { it.copy(currentSession = session, timerRunning = true) }
+		runCountdown(phaseIndex = 0, timeRemaining = phases[0].duration)
+		viewModelScope.launch { _event.send(FocusUiEvent.ShowSnackbar("Sesión iniciada")) }
 	}
-
-	private fun startTimer(session: FocusSession) {
+	
+	private fun runCountdown(phaseIndex: Int, timeRemaining: Long) {
 		timerJob?.cancel()
 		timerJob = viewModelScope.launch(Dispatchers.Default) {
-			var timeRemaining = WORK_DURATION
-			var cyclesCompleted = session.cyclesCompleted
-
-			while (cyclesCompleted < 4) {
-				val isWorkPhase = (cyclesCompleted % 2) == 0
-				val phaseDuration = if (isWorkPhase) WORK_DURATION else BREAK_DURATION
-
-				timeRemaining = phaseDuration
-				while (timeRemaining > 0) {
+			var index = phaseIndex
+			var remaining = timeRemaining
+			
+			while (index < phases.size) {
+				val phase = phases[index]
+				val phaseEndTime = System.currentTimeMillis() + remaining
+				while (System.currentTimeMillis() < phaseEndTime) {
+					val remainingNow = phaseEndTime - System.currentTimeMillis()
 					_uiState.update { state ->
 						state.copy(
-							timerMs = timeRemaining,
-							currentCycle = cyclesCompleted + 1,
-							isWorkPhase = isWorkPhase,
-							isLongBreak = false
+							timerMs = remainingNow,
+							currentCycle = phase.cycle,
+							isWorkPhase = phase.isWork,
+							isLongBreak = phase.isLong,
+							phaseIndex = index
 						)
 					}
 					delay(1000)
-					timeRemaining -= 1000
 				}
-				cyclesCompleted++
+				index++
+				remaining = phases.getOrNull(index)?.duration ?: 0L
 			}
-
-			_uiState.update { it.copy(timerMs = LONG_BREAK_DURATION) }
-			delay(LONG_BREAK_DURATION)
-
+			
 			_uiState.update { it.copy(showValidationDialog = true) }
+		}
+	}
+	
+	private fun resetTimerState() {
+		_uiState.update {
+			it.copy(
+				currentSession = null,
+				timerMs = 0L,
+				currentCycle = 0,
+				isWorkPhase = true,
+				isLongBreak = false,
+				timerRunning = false,
+				showValidationDialog = false,
+				phaseIndex = 0
+			)
 		}
 	}
 
@@ -118,12 +140,16 @@ class FocusViewModel(private val useCases: FocusSessionUseCases) : ViewModel() {
 		timerJob?.cancel()
 		_uiState.update { it.copy(timerRunning = false) }
 	}
-
+	
 	fun resumeTimer(session: FocusSession) {
+		val state = _uiState.value
 		_uiState.update { it.copy(timerRunning = true) }
-		startTimer(session)
+		runCountdown(
+			phaseIndex = state.phaseIndex,
+			timeRemaining = if (state.timerMs > 0) state.timerMs else phases[state.phaseIndex].duration
+		)
 	}
-
+	
 	fun validateSession(session: FocusSession, isValid: Boolean) {
 		timerJob?.cancel()
 		viewModelScope.launch {
@@ -132,23 +158,42 @@ class FocusViewModel(private val useCases: FocusSessionUseCases) : ViewModel() {
 					val validatedSession = session.copy(
 						isValidated = true,
 						validatedAt = System.currentTimeMillis(),
-						cyclesCompleted = 4
+						cyclesCompleted = PomodoroPolicy.TOTAL_CYCLES
 					)
-					useCases.validate(validatedSession)
+					useCases.create(validatedSession)
 					_event.send(FocusUiEvent.ShowSnackbar("Sesión validada"))
 				} else {
+					useCases.delete(session)
 					_event.send(FocusUiEvent.ShowSnackbar("Sesión descartada"))
 				}
-				_uiState.update { it.copy(currentSession = null, showValidationDialog = false) }
+				resetTimerState()
 				loadSessions()
 			} catch (e: Exception) {
 				_event.send(FocusUiEvent.ShowSnackbar("Error: ${e.message}"))
 			}
 		}
 	}
-
+	
 	fun abandonSession() {
 		timerJob?.cancel()
-		_uiState.update { it.copy(currentSession = null, showValidationDialog = false) }
+		val state = _uiState.value
+		val session = state.currentSession
+		val completedCycles = if (state.isWorkPhase) state.currentCycle - 1 else state.currentCycle
+		resetTimerState()
+		if (session == null) return
+
+		viewModelScope.launch {
+			if (completedCycles > 0) {
+				val partialSession = session.copy(
+					isValidated = true,
+					validatedAt = System.currentTimeMillis(),
+					cyclesCompleted = completedCycles
+				)
+				useCases.create(partialSession)
+				_event.send(FocusUiEvent.ShowSnackbar("Sesión guardada: $completedCycles de ${PomodoroPolicy.TOTAL_CYCLES} ciclos"))
+			} else {
+				useCases.delete(session)
+			}
+		}
 	}
 }

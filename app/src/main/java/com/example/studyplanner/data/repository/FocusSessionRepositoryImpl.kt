@@ -51,4 +51,8 @@ class FocusSessionRepositoryImpl(private val dao: FocusSessionDao) : FocusSessio
 	override suspend fun getValidatedSessionCount(): Int {
 		return dao.getValidatedSessionCount()
 	}
+
+	override suspend fun countActiveByTask(taskId: Int): Int {
+		return dao.countActiveByTask(taskId)
+	}
 }

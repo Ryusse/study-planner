@@ -9,18 +9,22 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.studyplanner.presentation.screens.SubjectListScreen
-import com.example.studyplanner.presentation.screens.TaskListScreen
+import androidx.navigation.navArgument
 import com.example.studyplanner.presentation.screens.dashboard.DashboardScreen
 import com.example.studyplanner.presentation.screens.focus.FocusScreen
 import com.example.studyplanner.presentation.screens.professor.ProfessorListScreen
+import com.example.studyplanner.presentation.screens.subject.SubjectListScreen
+import com.example.studyplanner.presentation.screens.task.TaskListScreen
+import com.example.studyplanner.presentation.viewmodel.DashboardViewModel
 import com.example.studyplanner.presentation.viewmodel.FocusViewModel
 import com.example.studyplanner.presentation.viewmodel.ProfessorViewModel
 import com.example.studyplanner.presentation.viewmodel.SubjectViewModel
@@ -32,34 +36,30 @@ fun AppNavigation(
 	professorViewModel: ProfessorViewModel,
 	taskViewModel: TaskViewModel,
 	focusViewModel: FocusViewModel,
-	subjectViewModel: SubjectViewModel
+	subjectViewModel: SubjectViewModel,
+	dashboardViewModel: DashboardViewModel
 ) {
 	val navController = rememberNavController()
-	val navigationItems = listOf(
-		NavItem.Dashboard,
-		NavItem.ProfessorList,
-		NavItem.SubjectList,
-		NavItem.TaskList,
-		NavItem.Focus
-	)
-	
+	val navigationItems = NavItem.items
+
 	val currentRoute = navController.currentBackStackEntryAsState()
 		.value?.destination?.route
 	val professorState by professorViewModel.uiState.collectAsState()
-	
-	val appBarTitle = when (currentRoute) {
-		NavRoutes.PROFESSOR_LIST -> when {
+
+	val appBarTitle = when {
+		currentRoute == NavRoutes.PROFESSOR_LIST -> when {
 			professorState.showAddDialog && professorState.selectedProfessor != null -> "Editar Profesor"
 			professorState.showAddDialog -> "Agregar Profesor"
 			else -> "Profesores"
 		}
-		NavRoutes.DASHBOARD -> "Resumen"
-		NavRoutes.SUBJECT_LIST -> "Materias"
-		NavRoutes.TASK_LIST -> "Tareas"
-		NavRoutes.FOCUS -> "Enfoque"
+		currentRoute == NavRoutes.DASHBOARD -> "Resumen"
+		currentRoute == NavRoutes.SUBJECT_LIST -> "Materias"
+		currentRoute == NavRoutes.TASK_LIST -> "Tareas"
+		currentRoute == NavRoutes.FOCUS -> "Enfoque"
+		currentRoute == NavRoutes.FOCUS_WITH_TASK -> "Enfoque"
 		else -> "StudyPlanner"
 	}
-	
+
 	Scaffold(
 		topBar = {
 			TopAppBar(
@@ -73,11 +73,12 @@ fun AppNavigation(
 		},
 		bottomBar = {
 			NavigationBar {
-				val currentRoute = navController.currentBackStackEntryAsState()
+				val bottomBarRoute = navController.currentBackStackEntryAsState()
 					.value?.destination?.route
 				navigationItems.forEach { item ->
+					val isFocusTabWithTask = item.route == NavRoutes.FOCUS && bottomBarRoute == NavRoutes.FOCUS_WITH_TASK
 					NavigationBarItem(
-						selected = currentRoute == item.route,
+						selected = bottomBarRoute == item.route || isFocusTabWithTask,
 						onClick = {
 							navController.navigate(item.route) {
 								popUpTo(NavRoutes.DASHBOARD) { saveState = true }
@@ -100,18 +101,33 @@ fun AppNavigation(
 			modifier = Modifier.padding(paddingValues)
 		) {
 			composable(NavRoutes.DASHBOARD) {
-				DashboardScreen(navController, taskViewModel)
+				DashboardScreen(navController, dashboardViewModel)
 			}
 			composable(NavRoutes.PROFESSOR_LIST) {
 				ProfessorListScreen(navController, professorViewModel)
 			}
 			composable(NavRoutes.SUBJECT_LIST) {
-				SubjectListScreen(navController = navController, viewModel = subjectViewModel)
+				SubjectListScreen(
+					navController = navController,
+					viewModel = subjectViewModel,
+					professorViewModel = professorViewModel,
+					taskViewModel = taskViewModel
+				)
 			}
 			composable(NavRoutes.TASK_LIST) {
-				TaskListScreen(navController, taskViewModel)
+				TaskListScreen(navController, taskViewModel, subjectViewModel)
 			}
 			composable(NavRoutes.FOCUS) {
+				FocusScreen(navController, focusViewModel)
+			}
+			composable(
+				route = NavRoutes.FOCUS_WITH_TASK,
+				arguments = listOf(navArgument("taskId") { type = NavType.IntType })
+			) { backStackEntry ->
+				val taskId = backStackEntry.arguments?.getInt("taskId")
+				LaunchedEffect(taskId) {
+					if (taskId != null) focusViewModel.startSession(taskId)
+				}
 				FocusScreen(navController, focusViewModel)
 			}
 		}

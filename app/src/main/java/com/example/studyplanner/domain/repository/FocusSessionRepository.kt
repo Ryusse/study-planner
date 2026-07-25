@@ -13,4 +13,5 @@ interface FocusSessionRepository {
 	fun getValidatedSessions(): Flow<List<FocusSession>>
 	fun getActiveSessions(): Flow<List<FocusSession>>
 	suspend fun getValidatedSessionCount(): Int
+	suspend fun countActiveByTask(taskId: Int): Int
 }

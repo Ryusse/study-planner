@@ -18,15 +18,16 @@ class MainActivity : ComponentActivity() {
 		val taskViewModel = AppModule.provideTaskViewModel(applicationContext)
 		val focusViewModel = AppModule.provideFocusViewModel(applicationContext)
 		val subjectViewModel = AppModule.provideSubjectViewModel(applicationContext)
-		//enableEdgeToEdge()
-		
+		val dashboardViewModel = AppModule.provideDashboardViewModel(applicationContext)
+
 		setContent {
 			StudyPlannerTheme(darkTheme = true, dynamicColor = false) {
 				AppNavigation(
 					professorViewModel = professorViewModel,
 					taskViewModel = taskViewModel,
 					focusViewModel = focusViewModel,
-					subjectViewModel = subjectViewModel
+					subjectViewModel = subjectViewModel,
+					dashboardViewModel = dashboardViewModel
 				)
 			}
 		}

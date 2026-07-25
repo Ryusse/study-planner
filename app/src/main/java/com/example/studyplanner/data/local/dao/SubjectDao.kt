@@ -27,4 +27,10 @@ interface SubjectDao {
 
 	@Query("SELECT * FROM subjects WHERE professorId = :professorId")
 	fun getSubjectsByProfessor(professorId: Int): Flow<List<SubjectEntity>>
+
+	@Query("SELECT * FROM subjects WHERE code = :code LIMIT 1")
+	suspend fun getSubjectByCode(code: String): SubjectEntity?
+
+	@Query("SELECT COUNT(*) FROM subjects WHERE professorId = :professorId")
+	suspend fun countByProfessor(professorId: Int): Int
 }
