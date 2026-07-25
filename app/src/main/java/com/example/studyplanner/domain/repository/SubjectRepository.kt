@@ -10,4 +10,6 @@ interface SubjectRepository {
 	fun getAllSubjects(): Flow<List<Subject>>
 	suspend fun getSubjectById(id: Int): Subject?
 	fun getSubjectsByProfessor(professorId: Int): Flow<List<Subject>>
+	suspend fun getSubjectByCode(code: String): Subject?
+	suspend fun countByProfessor(professorId: Int): Int
 }

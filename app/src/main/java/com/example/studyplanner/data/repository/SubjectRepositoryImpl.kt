@@ -35,4 +35,12 @@ class SubjectRepositoryImpl(private val dao: SubjectDao) : SubjectRepository {
 			entities.map { SubjectMapper.toDomain(it) }
 		}
 	}
+
+	override suspend fun getSubjectByCode(code: String): Subject? {
+		return dao.getSubjectByCode(code)?.let { SubjectMapper.toDomain(it) }
+	}
+
+	override suspend fun countByProfessor(professorId: Int): Int {
+		return dao.countByProfessor(professorId)
+	}
 }

@@ -48,8 +48,7 @@ fun SubjectListScreen(
 	val professorState by professorViewModel.uiState.collectAsState()
 	val taskState by taskViewModel.uiState.collectAsState()
 	val snackbarHostState = remember { SnackbarHostState() }
-	
-	// skipPartiallyExpanded = true asegura que abra completo (height fit)
+
 	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 	var subjectToDelete by remember { mutableStateOf<Subject?>(null) }
 
