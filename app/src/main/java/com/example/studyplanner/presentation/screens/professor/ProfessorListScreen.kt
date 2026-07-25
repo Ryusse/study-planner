@@ -103,8 +103,11 @@ fun ProfessorListScreen(
 	
 	if (state.showAddDialog) {
 		AddProfessorDialog(
-			viewModel = viewModel,
+			editingProfessor = state.selectedProfessor,
 			onDismiss = { viewModel.hideAddDialog() },
+			onSave = { professor ->
+				if (state.selectedProfessor != null) viewModel.updateProfessor(professor) else viewModel.addProfessor(professor)
+			},
 			sheetState = sheetState
 		)
 	}

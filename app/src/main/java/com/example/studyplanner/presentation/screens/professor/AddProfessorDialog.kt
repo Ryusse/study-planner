@@ -11,6 +11,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -18,7 +19,6 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,68 +29,49 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.studyplanner.domain.model.Professor
-import com.example.studyplanner.presentation.viewmodel.ProfessorViewModel
-
-private fun isValidEmail(email: String): Boolean {
-	return email.matches(Regex("^[A-Za-z0-9+_.-]+@(.+)$"))
-}
+import com.example.studyplanner.domain.model.ProfessorPolicy
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddProfessorDialog(
-	viewModel: ProfessorViewModel,
+	editingProfessor: Professor?,
 	onDismiss: () -> Unit,
+	onSave: (Professor) -> Unit,
 	sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 ) {
-	val state by viewModel.uiState.collectAsState()
-	var name by remember(state.selectedProfessor) {
-		mutableStateOf(
-			state.selectedProfessor?.name ?: ""
-		)
-	}
-	var email by remember(state.selectedProfessor) {
-		mutableStateOf(
-			state.selectedProfessor?.email ?: ""
-		)
-	}
-	var department by remember(state.selectedProfessor) {
-		mutableStateOf(
-			state.selectedProfessor?.department ?: ""
-		)
-	}
-	var nameError by remember(state.selectedProfessor) { mutableStateOf<String?>(null) }
-	var emailError by remember(state.selectedProfessor) { mutableStateOf<String?>(null) }
-	var departmentError by remember(state.selectedProfessor) { mutableStateOf<String?>(null) }
-	
-	val isEditing = state.selectedProfessor != null
+	var name by remember(editingProfessor) { mutableStateOf(editingProfessor?.name ?: "") }
+	var email by remember(editingProfessor) { mutableStateOf(editingProfessor?.email ?: "") }
+	var department by remember(editingProfessor) { mutableStateOf(editingProfessor?.department ?: "") }
+	var nameError by remember(editingProfessor) { mutableStateOf<String?>(null) }
+	var emailError by remember(editingProfessor) { mutableStateOf<String?>(null) }
+	var departmentError by remember(editingProfessor) { mutableStateOf<String?>(null) }
+
+	val isEditing = editingProfessor != null
 	val title = if (isEditing) "Editar Profesor" else "Agregar Profesor"
-	
+
 	val validateForm = {
 		nameError = when {
 			name.isBlank() -> "Nombre requerido"
-			name.length < 3 -> "Mínimo 3 caracteres"
-			name.length > 100 -> "Máximo 100 caracteres"
+			name.length < ProfessorPolicy.NAME_MIN_LENGTH -> "Mínimo ${ProfessorPolicy.NAME_MIN_LENGTH} caracteres"
+			name.length > ProfessorPolicy.NAME_MAX_LENGTH -> "Máximo ${ProfessorPolicy.NAME_MAX_LENGTH} caracteres"
 			else -> null
 		}
 		emailError = when {
 			email.isBlank() -> "Email requerido"
-			!isValidEmail(email) -> "Email inválido"
+			!ProfessorPolicy.isValidEmail(email) -> "Email inválido"
 			else -> null
 		}
 		departmentError = when {
 			department.isBlank() -> "Departamento requerido"
-			department.length < 3 -> "Mínimo 3 caracteres"
-			department.length > 100 -> "Máximo 100 caracteres"
+			department.length < ProfessorPolicy.NAME_MIN_LENGTH -> "Mínimo ${ProfessorPolicy.NAME_MIN_LENGTH} caracteres"
+			department.length > ProfessorPolicy.NAME_MAX_LENGTH -> "Máximo ${ProfessorPolicy.NAME_MAX_LENGTH} caracteres"
 			else -> null
 		}
 		nameError == null && emailError == null && departmentError == null
 	}
-	
+
 	ModalBottomSheet(
-		onDismissRequest = {
-			viewModel.clearSelection()
-			onDismiss()
-		},
+		onDismissRequest = onDismiss,
 		sheetState = sheetState,
 		scrimColor = Color.Black.copy(alpha = 0.32f)
 	) {
@@ -103,8 +84,8 @@ fun AddProfessorDialog(
 				.verticalScroll(rememberScrollState()),
 			verticalArrangement = Arrangement.spacedBy(16.dp)
 		) {
-			Text(title, style = androidx.compose.material3.MaterialTheme.typography.headlineSmall)
-			
+			Text(title, style = MaterialTheme.typography.headlineSmall)
+
 			Column {
 				OutlinedTextField(
 					value = name,
@@ -123,7 +104,7 @@ fun AddProfessorDialog(
 					)
 				}
 			}
-			
+
 			Column {
 				OutlinedTextField(
 					value = email,
@@ -143,7 +124,7 @@ fun AddProfessorDialog(
 					)
 				}
 			}
-			
+
 			Column {
 				OutlinedTextField(
 					value = department,
@@ -162,50 +143,32 @@ fun AddProfessorDialog(
 					)
 				}
 			}
-			
+
 			Row(
 				modifier = Modifier
 					.fillMaxWidth()
 					.padding(top = 16.dp),
 				horizontalArrangement = Arrangement.spacedBy(8.dp)
 			) {
-				OutlinedButton(
-					onClick = {
-						viewModel.clearSelection()
-						onDismiss()
-					},
-					modifier = Modifier.weight(1f),
-					enabled = state.loadingMessage == null
-				) {
+				OutlinedButton(onClick = onDismiss, modifier = Modifier.weight(1f)) {
 					Text("Cancelar")
 				}
-				
 				Button(
 					onClick = {
 						if (validateForm()) {
-							val professor = if (isEditing) {
-								state.selectedProfessor!!.copy(
-									name = name,
-									email = email,
-									department = department
-								)
-							} else {
-								Professor(
-									name = name,
-									email = email,
-									department = department
-								)
-							}
-							
-							if (isEditing) {
-								viewModel.updateProfessor(professor)
-							} else {
-								viewModel.addProfessor(professor)
-							}
+							val professor = (editingProfessor ?: Professor(
+								name = "",
+								email = "",
+								department = ""
+							)).copy(
+								name = name,
+								email = email,
+								department = department
+							)
+							onSave(professor)
 						}
 					},
-					modifier = Modifier.weight(1f),
-					enabled = state.loadingMessage == null
+					modifier = Modifier.weight(1f)
 				) {
 					Text(if (isEditing) "Actualizar" else "Agregar")
 				}
