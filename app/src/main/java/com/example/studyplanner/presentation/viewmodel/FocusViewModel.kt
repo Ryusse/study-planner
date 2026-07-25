@@ -62,8 +62,7 @@ class FocusViewModel(private val useCases: FocusSessionUseCases) : ViewModel() {
 	private fun loadActiveSession() {
 		viewModelScope.launch {
 			useCases.getActiveSession().collect { session ->
-				if (session == null) timerJob?.cancel()
-				_uiState.update { it.copy(currentSession = session) }
+				if (session != null) useCases.delete(session)
 			}
 		}
 	}
@@ -122,6 +121,21 @@ class FocusViewModel(private val useCases: FocusSessionUseCases) : ViewModel() {
 		}
 	}
 	
+	private fun resetTimerState() {
+		_uiState.update {
+			it.copy(
+				currentSession = null,
+				timerMs = 0L,
+				currentCycle = 0,
+				isWorkPhase = true,
+				isLongBreak = false,
+				timerRunning = false,
+				showValidationDialog = false,
+				phaseIndex = 0
+			)
+		}
+	}
+
 	fun pauseTimer() {
 		timerJob?.cancel()
 		_uiState.update { it.copy(timerRunning = false) }
@@ -152,7 +166,7 @@ class FocusViewModel(private val useCases: FocusSessionUseCases) : ViewModel() {
 					useCases.delete(session)
 					_event.send(FocusUiEvent.ShowSnackbar("Sesión descartada"))
 				}
-				_uiState.update { it.copy(currentSession = null, showValidationDialog = false) }
+				resetTimerState()
 				loadSessions()
 			} catch (e: Exception) {
 				_event.send(FocusUiEvent.ShowSnackbar("Error: ${e.message}"))
@@ -162,10 +176,24 @@ class FocusViewModel(private val useCases: FocusSessionUseCases) : ViewModel() {
 	
 	fun abandonSession() {
 		timerJob?.cancel()
-		val session = _uiState.value.currentSession
-		_uiState.update { it.copy(currentSession = null, showValidationDialog = false) }
-		if (session != null) {
-			viewModelScope.launch { useCases.delete(session) }
+		val state = _uiState.value
+		val session = state.currentSession
+		val completedCycles = if (state.isWorkPhase) state.currentCycle - 1 else state.currentCycle
+		resetTimerState()
+		if (session == null) return
+
+		viewModelScope.launch {
+			if (completedCycles > 0) {
+				val partialSession = session.copy(
+					isValidated = true,
+					validatedAt = System.currentTimeMillis(),
+					cyclesCompleted = completedCycles
+				)
+				useCases.create(partialSession)
+				_event.send(FocusUiEvent.ShowSnackbar("Sesión guardada: $completedCycles de ${PomodoroPolicy.TOTAL_CYCLES} ciclos"))
+			} else {
+				useCases.delete(session)
+			}
 		}
 	}
 }
