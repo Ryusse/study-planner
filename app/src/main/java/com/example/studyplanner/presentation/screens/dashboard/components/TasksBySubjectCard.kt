@@ -22,11 +22,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.studyplanner.core.navigation.NavRoutes
 import com.example.studyplanner.domain.model.Subject
-import com.example.studyplanner.domain.model.Task
+import com.example.studyplanner.domain.model.SubjectProgress
 
 @Composable
 fun TasksBySubjectCard(
-	pendingBySubject: Map<Subject, List<Task>>,
+	pendingBySubject: Map<Subject, SubjectProgress>,
 	navController: NavHostController
 ) {
 	Card(
@@ -42,7 +42,7 @@ fun TasksBySubjectCard(
 			verticalArrangement = Arrangement.spacedBy(12.dp)
 		) {
 			Text(
-				"Tareas Pendientes por Materia",
+				"Progreso por Materia",
 				fontSize = 16.sp,
 				fontWeight = FontWeight.Bold,
 				modifier = Modifier.padding(bottom = 8.dp)
@@ -50,16 +50,16 @@ fun TasksBySubjectCard(
 
 			if (pendingBySubject.isEmpty()) {
 				Text(
-					"No hay tareas pendientes",
+					"No hay tareas registradas",
 					fontSize = 14.sp,
 					color = MaterialTheme.colorScheme.onSurfaceVariant,
 					modifier = Modifier.padding(vertical = 16.dp)
 				)
 			} else {
-				pendingBySubject.forEach { (subject, tasks) ->
+				pendingBySubject.forEach { (subject, progress) ->
 					SubjectTaskRow(
 						subjectName = "${subject.code} - ${subject.name}",
-						pendingCount = tasks.size
+						progress = progress
 					)
 				}
 			}
@@ -79,7 +79,7 @@ fun TasksBySubjectCard(
 @Composable
 private fun SubjectTaskRow(
 	subjectName: String,
-	pendingCount: Int
+	progress: SubjectProgress
 ) {
 	Row(
 		modifier = Modifier
@@ -98,7 +98,7 @@ private fun SubjectTaskRow(
 			verticalAlignment = Alignment.CenterVertically
 		) {
 			Text(
-				"$pendingCount pendiente${if (pendingCount != 1) "s" else ""}",
+				"${progress.completed} completada${if (progress.completed != 1) "s" else ""} · ${progress.pending} pendiente${if (progress.pending != 1) "s" else ""}",
 				fontSize = 14.sp,
 				fontWeight = FontWeight.SemiBold,
 				color = MaterialTheme.colorScheme.primary

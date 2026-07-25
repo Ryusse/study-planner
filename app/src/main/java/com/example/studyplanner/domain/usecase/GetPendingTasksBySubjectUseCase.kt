@@ -1,7 +1,7 @@
 package com.example.studyplanner.domain.usecase
 
 import com.example.studyplanner.domain.model.Subject
-import com.example.studyplanner.domain.model.Task
+import com.example.studyplanner.domain.model.SubjectProgress
 import com.example.studyplanner.domain.repository.SubjectRepository
 import com.example.studyplanner.domain.repository.TaskRepository
 import kotlinx.coroutines.flow.Flow
@@ -11,16 +11,21 @@ class GetPendingTasksBySubjectUseCase(
 	private val taskRepository: TaskRepository,
 	private val subjectRepository: SubjectRepository
 ) {
-	operator fun invoke(): Flow<Map<Subject, List<Task>>> =
+	operator fun invoke(): Flow<Map<Subject, SubjectProgress>> =
 		combine(
-			taskRepository.getPendingTasks(),
+			taskRepository.getAllTasks(),
 			subjectRepository.getAllSubjects()
-		) { pendingTasks, subjects ->
+		) { allTasks, subjects ->
 			val subjectsById = subjects.associateBy { it.id }
-			pendingTasks
+			allTasks
 				.groupBy { it.subjectId }
 				.mapNotNull { (subjectId, tasks) ->
-					subjectsById[subjectId]?.let { subject -> subject to tasks }
+					subjectsById[subjectId]?.let { subject ->
+						subject to SubjectProgress(
+							completed = tasks.count { it.isCompleted },
+							pending = tasks.count { !it.isCompleted }
+						)
+					}
 				}
 				.toMap()
 		}
