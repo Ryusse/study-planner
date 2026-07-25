@@ -11,7 +11,7 @@ class GetStreakUseCase(private val repository: FocusSessionRepository) {
 		val sortedDates = sessions.mapNotNull { it.validatedAt }
 			.distinct()
 			.sorted()
-			.map { it / 86400000 } // convert ms to days
+			.map { it / 86400000 }
 
 		if (sortedDates.isEmpty()) return@map 0
 
@@ -27,6 +27,8 @@ class GetStreakUseCase(private val repository: FocusSessionRepository) {
 				lastDay = sortedDates[i]
 			}
 		}
-		streak
+
+		val today = System.currentTimeMillis() / 86400000
+		if (today - lastDay > 1) 0 else streak
 	}
 }
