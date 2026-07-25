@@ -13,6 +13,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.studyplanner.presentation.screens.dashboard.components.PointsCard
+import com.example.studyplanner.presentation.screens.dashboard.components.StreakCard
 import com.example.studyplanner.presentation.screens.dashboard.components.TaskStatsCard
 import com.example.studyplanner.presentation.screens.dashboard.components.TasksBySubjectCard
 import com.example.studyplanner.presentation.viewmodel.DashboardViewModel
@@ -33,6 +35,8 @@ fun DashboardScreen(
 			.verticalScroll(rememberScrollState()),
 		verticalArrangement = Arrangement.spacedBy(16.dp)
 	) {
+		StreakCard(streak = state.streak)
+		PointsCard(points = state.points)
 		TaskStatsCard(
 			totalTasks = state.stats.total,
 			completedTasks = state.stats.completed,

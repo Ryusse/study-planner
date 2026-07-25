@@ -144,9 +144,12 @@ object AppModule {
     fun provideDashboardUseCases(context: Context): DashboardUseCases {
         val taskRepository = provideTaskRepository(context)
         val subjectRepository = provideSubjectRepository(context)
+        val focusRepository = provideFocusSessionRepository(context)
         return DashboardUseCases(
             getStats = GetTaskStatsUseCase(taskRepository),
-            getPendingBySubject = GetPendingTasksBySubjectUseCase(taskRepository, subjectRepository)
+            getPendingBySubject = GetPendingTasksBySubjectUseCase(taskRepository, subjectRepository),
+            getStreak = GetStreakUseCase(focusRepository),
+            calculatePoints = CalculatePointsUseCase(focusRepository)
         )
     }
 

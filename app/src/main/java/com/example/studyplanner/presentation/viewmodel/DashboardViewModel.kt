@@ -17,6 +17,8 @@ class DashboardViewModel(private val useCases: DashboardUseCases) : ViewModel() 
 	init {
 		loadStats()
 		loadPendingBySubject()
+		loadStreak()
+		loadPoints()
 	}
 
 	private fun loadStats() {
@@ -31,6 +33,22 @@ class DashboardViewModel(private val useCases: DashboardUseCases) : ViewModel() 
 		viewModelScope.launch {
 			useCases.getPendingBySubject().collect { pendingBySubject ->
 				_uiState.update { it.copy(pendingBySubject = pendingBySubject) }
+			}
+		}
+	}
+
+	private fun loadStreak() {
+		viewModelScope.launch {
+			useCases.getStreak().collect { streak ->
+				_uiState.update { it.copy(streak = streak) }
+			}
+		}
+	}
+
+	private fun loadPoints() {
+		viewModelScope.launch {
+			useCases.calculatePoints().collect { points ->
+				_uiState.update { it.copy(points = points) }
 			}
 		}
 	}
