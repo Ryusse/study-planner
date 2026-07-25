@@ -48,7 +48,7 @@ fun PomodoroTimerUI(
 		horizontalAlignment = Alignment.CenterHorizontally
 	) {
 		Text(
-			"${state.currentCycle}/4 ciclos",
+			"${state.currentCycle}/${state.totalCycles} ciclos",
 			fontSize = 18.sp,
 			color = MaterialTheme.colorScheme.onSurfaceVariant
 		)
