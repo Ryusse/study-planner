@@ -42,9 +42,13 @@ class TaskRepositoryImpl(private val dao: TaskDao) : TaskRepository {
 		}
 	}
 
-	override fun getThreeUrgentTasks(): Flow<List<Task>> {
-		return dao.getThreeUrgentTasks().map { entities ->
+	override fun getUrgentTasks(limit: Int): Flow<List<Task>> {
+		return dao.getUrgentTasks(limit).map { entities ->
 			entities.map { TaskMapper.toDomain(it) }
 		}
+	}
+
+	override suspend fun countBySubject(subjectId: Int): Int {
+		return dao.countBySubject(subjectId)
 	}
 }

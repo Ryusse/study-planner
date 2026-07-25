@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.studyplanner.domain.model.Subject
+import com.example.studyplanner.domain.model.TaskPriority
 import com.example.studyplanner.presentation.state.TaskStatusFilter
 
 @Composable
@@ -75,7 +76,7 @@ fun TaskFilterBar(
 				}
 			)
 		}
-		items(listOf("Alta", "Media", "Baja")) { priority ->
+		items(TaskPriority.ALL) { priority ->
 			val selected = filterPriority == priority
 			FilterChip(
 				selected = selected,

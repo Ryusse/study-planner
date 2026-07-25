@@ -36,12 +36,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.studyplanner.domain.model.Subject
 import com.example.studyplanner.domain.model.Task
+import com.example.studyplanner.domain.model.TaskPolicy
+import com.example.studyplanner.domain.model.TaskPriority
+import com.example.studyplanner.domain.model.TaskType
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private val PRIORITIES = listOf("Alta", "Media", "Baja")
-private val TYPES = listOf("Tarea", "Examen", "Proyecto")
 private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale("es"))
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,8 +62,8 @@ fun AddTaskDialog(
 	}
 	var taskTitle by remember(editingTask) { mutableStateOf(editingTask?.title ?: "") }
 	var deadline by remember(editingTask) { mutableStateOf(editingTask?.deadline ?: System.currentTimeMillis()) }
-	var priority by remember(editingTask) { mutableStateOf(editingTask?.priority ?: PRIORITIES[1]) }
-	var type by remember(editingTask) { mutableStateOf(editingTask?.type ?: TYPES[0]) }
+	var priority by remember(editingTask) { mutableStateOf(editingTask?.priority ?: TaskPriority.MEDIA) }
+	var type by remember(editingTask) { mutableStateOf(editingTask?.type ?: TaskType.TAREA) }
 	var estimatedTime by remember(editingTask) { mutableStateOf(editingTask?.estimatedTime?.toString() ?: "") }
 
 	var titleError by remember(editingTask) { mutableStateOf<String?>(null) }
@@ -77,7 +78,7 @@ fun AddTaskDialog(
 	val validateForm = {
 		titleError = when {
 			taskTitle.isBlank() -> "Título requerido"
-			taskTitle.length > 150 -> "Máximo 150 caracteres"
+			taskTitle.length > TaskPolicy.TITLE_MAX_LENGTH -> "Máximo ${TaskPolicy.TITLE_MAX_LENGTH} caracteres"
 			else -> null
 		}
 		subjectError = if (selectedSubject == null) "Selecciona una materia" else null
@@ -188,7 +189,7 @@ fun AddTaskDialog(
 						expanded = priorityMenuExpanded,
 						onDismissRequest = { priorityMenuExpanded = false }
 					) {
-						PRIORITIES.forEach { option ->
+						TaskPriority.ALL.forEach { option ->
 							DropdownMenuItem(
 								text = { Text(option) },
 								onClick = { priority = option; priorityMenuExpanded = false }
@@ -216,7 +217,7 @@ fun AddTaskDialog(
 						expanded = typeMenuExpanded,
 						onDismissRequest = { typeMenuExpanded = false }
 					) {
-						TYPES.forEach { option ->
+						TaskType.ALL.forEach { option ->
 							DropdownMenuItem(
 								text = { Text(option) },
 								onClick = { type = option; typeMenuExpanded = false }

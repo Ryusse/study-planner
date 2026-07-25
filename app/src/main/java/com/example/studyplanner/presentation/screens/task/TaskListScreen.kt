@@ -90,7 +90,7 @@ fun TaskListScreen(
 						start = 16.dp,
 						top = 8.dp,
 						end = 16.dp,
-						bottom = 88.dp // Espacio para el FAB
+						bottom = 88.dp
 					),
 					verticalArrangement = Arrangement.spacedBy(8.dp)
 				) {
